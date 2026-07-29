@@ -1,0 +1,57 @@
+# ===============================================
+#            KCRAFT - Messages FR
+# ===============================================
+
+messages:
+  prefix: "&8[&6Kcraft&8]"
+  
+  craft:
+    success: "%prefix% &aCraft réussi! Vous avez obtenu &e%item%"
+    failed: "%prefix% &cLe craft a échoué! Items perdus..."
+    no-permission: "%prefix% &cVous n'avez pas la permission pour ce craft!"
+    wrong-world: "%prefix% &cCe craft n'est pas disponible dans ce monde!"
+    faction-level-low: "%prefix% &cVotre faction doit être niveau &e%level% &cpour ce craft!"
+    cooldown: "%prefix% &cVous devez attendre encore &e%time% &cavant de recrafter!"
+    no-ingredients: "%prefix% &cIngrédients insuffisants!"
+    invalid-table: "%prefix% &cCette table ne peut pas crafter cet item!"
+    no-recipe: "%prefix% &cCette combinaison ne donne aucun résultat!"
+    error: "%prefix% &cErreur lors du craft!"
+    plugin-required: "%prefix% &cPlugin requis non disponible!"
+    no-materials: "%prefix% &cPas assez de matériaux pour le craft en masse!"
+    mass-success: "%prefix% &a%amount% items craftés: &e%item%"
+    mass-failed: "%prefix% &cAucun craft en masse possible!"
+    
+  table:
+    open: "%prefix% &7Table de craft &e%table% &7ouverte"
+    no-access: "%prefix% &cVous ne pouvez pas utiliser cette table!"
+    invalid-custom: "%prefix% &cCette table custom est invalide ou non enregistrée!"
+    custom-placed: "%prefix% &aTable custom placée: &e%table%"
+    
+  gui:
+    craft-button: "&a&lCRAFTER"
+    craft-button-lore:
+      - "&7Clic gauche pour crafter x1"
+      - "&7Shift+Clic pour crafter max"
+    result-empty: "&cAucun résultat"
+    ingredient-missing: "&cIngrédient manquant: &f%item%"
+    title-antique: "&8Table Antique (4x4)"
+    title-npc: "&8Table du Forgeron"
+    title-admin: "&8Table Admin"
+    
+  commands:
+    reload: "%prefix% &aConfiguration rechargée!"
+    give-success: "%prefix% &aItem &e%item% &adonné à &e%player%"
+    give-error: "%prefix% &cErreur lors de la création de l'item!"
+    givetable-success: "%prefix% &aTable &e%table% &adonnée à &e%player%"
+    givetable-error: "%prefix% &cErreur lors de la création de la table!"
+    list-header: "%prefix% &7=== Crafts Disponibles (%page%/%max%) ==="
+    list-entry: "&e- &f%craft% &7(%table%)"
+    no-crafts: "%prefix% &cAucun craft disponible pour vous!"
+    invalid-command: "%prefix% &cCommande invalide! Usage: /kcraft [reload|give|givetable|list|info|stats]"
+    no-permission-cmd: "%prefix% &cVous n'avez pas la permission!"
+    player-not-found: "%prefix% &cJoueur introuvable!"
+    
+  effects:
+    craft-success-sound: "ENTITY_PLAYER_LEVELUP"
+    craft-fail-sound: "ENTITY_ITEM_BREAK"
+    table-open-sound: "BLOCK_CHEST_OPEN"

@@ -1,0 +1,294 @@
+# ===============================================
+#          KCRAFT - Crafts armor
+#      Minerai custom et équipements avancés
+#   Avec attributs et durabilité configurables
+# ===============================================
+
+armor:
+  # ================== Armure EN AZURITE ==================
+  
+  azurite_helmet:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "DIAMOND_HELMET"
+      amount: 1
+      name: "&5Casque en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azurite_helmet"
+        material: "azurite"
+        cit-model: "azurite_helmet"
+        armor-piece: "helmet"
+  
+  azurite_chestplate:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "D D"
+      - "DDD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "DIAMOND_CHESTPLATE"
+      amount: 1
+      name: "&5Plastron en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azurite_chestplate"
+        material: "azurite"
+        cit-model: "azurite_chestplate"
+        armor-piece: "chestplate"
+  
+  azurite_leggings:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "D D"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "DIAMOND_LEGGINGS"
+      amount: 1
+      name: "&5Jambières en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azurite_leggings"
+        material: "azurite"
+        cit-model: "azurite_leggings"
+        armor-piece: "leggings"
+  
+  azurite_boots:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "D D"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "DIAMOND_BOOTS"
+      amount: 1
+      name: "&5Bottes en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azurite_boots"
+        material: "azurite"
+        cit-model: "azurite_boots"
+        armor-piece: "boots"
+        
+  # ================== Armure EN Jaspe ==================
+
+  jaspe_helmet:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+    result:
+      material: "DIAMOND_HELMET"
+      amount: 1
+      name: "&cCasque en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspe_helmet"
+        material: "jaspe"
+        cit-model: "jaspe_helmet"
+        armor-piece: "helmet"
+  
+  jaspe_chestplate:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "D D"
+      - "DDD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+    result:
+      material: "DIAMOND_CHESTPLATE"
+      amount: 1
+      name: "&cPlastron en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspe_chestplate"
+        material: "jaspe"
+        cit-model: "jaspe_chestplate"
+        armor-piece: "chestplate"
+  
+  jaspe_leggings:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "D D"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+    result:
+      material: "DIAMOND_LEGGINGS"
+      amount: 1
+      name: "&cJambières en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspe_leggings"
+        material: "jaspe"
+        cit-model: "jaspe_leggings"
+        armor-piece: "leggings"
+  
+  jaspe_boots:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "D D"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+    result:
+      material: "DIAMOND_BOOTS"
+      amount: 1
+      name: "&cBottes en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspe_boots"
+        material: "jaspe"
+        cit-model: "jaspe_boots"
+        armor-piece: "boots"
+  
+  # ================== Armure EN Saphir ==================
+  
+  saphir_helmet:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+    result:
+      material: "DIAMOND_HELMET"
+      amount: 1
+      name: "&3Casque en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphir_helmet"
+        material: "saphir"
+        cit-model: "saphir_helmet"
+        armor-piece: "helmet"
+  
+  saphir_chestplate:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "D D"
+      - "DDD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+    result:
+      material: "DIAMOND_CHESTPLATE"
+      amount: 1
+      name: "&3Plastron en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphir_chestplate"
+        material: "saphir"
+        cit-model: "saphir_chestplate"
+        armor-piece: "chestplate"
+  
+  saphir_leggings:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "D D"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+    result:
+      material: "DIAMOND_LEGGINGS"
+      amount: 1
+      name: "&3Jambières en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphir_leggings"
+        material: "saphir"
+        cit-model: "saphir_leggings"
+        armor-piece: "leggings"
+  
+  saphir_boots:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "D D"
+      - "D D"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+    result:
+      material: "DIAMOND_BOOTS"
+      amount: 1
+      name: "&3Bottes en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphir_boots"
+        material: "saphir"
+        cit-model: "saphir_boots"
+        armor-piece: "boots"

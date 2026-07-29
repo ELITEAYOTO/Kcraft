@@ -1,0 +1,112 @@
+# ===============================================
+#         KCRAFT - Collecteurs Kharvester  
+#    Intégration avec le plugin Kharvester
+# ===============================================
+
+collectors:
+  # COLLECTEUR KHARVESTER - Stone (preview + give commande)
+  kharvester_collector_stone:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "Kharvester"
+    success-rate: 100
+    permission: "kcraft.collector.stone"
+    worlds: ["world"]
+    
+    pattern:
+      - "III"
+      - "IHI"  
+      - "III"
+    ingredients:
+      I:
+        material: "IRON_INGOT"
+        # Pas de NBT - accepte lingots vanilla
+      H:
+        material: "HOPPER"
+        
+    result:
+      # Preview dans la GUI Kcraft (le vrai item est donné par commande)
+      material: "CHEST"
+      name: "&2Collecteur Stone (Preview)"
+      lore:
+        - "&7Preview Kcraft"
+        - "&7L'item final est donné par Kharvester"
+      
+    on-success:
+      message: "&a✓ Collecteur Tier I obtenu !"
+      sound: "BLOCK_ANVIL_USE"
+      particle: "CRIT:15"
+      # Commande Kharvester (observée dans le workspace): khgive
+      command: "khgive {player_name} collector_stone 1"
+      consume-result: false
+      console-command: true
+
+  # COLLECTEUR KHARVESTER - Iron (preview + give commande)
+  kharvester_collector_iron:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "Kharvester"
+    success-rate: 100
+    permission: "kcraft.collector.iron"
+    worlds: ["world"]
+
+    pattern:
+      - "GGG"
+      - "GHG"
+      - "GGG"
+    ingredients:
+      G:
+        material: "GOLD_INGOT"
+      H:
+        material: "HOPPER"
+
+    result:
+      material: "TRAPPED_CHEST"
+      name: "&6Collecteur Iron (Preview)"
+      lore:
+        - "&7Preview Kcraft"
+        - "&7L'item final est donné par Kharvester"
+
+    on-success:
+      message: "&a✓ Collecteur Tier II obtenu !"
+      sound: "BLOCK_ANVIL_USE"
+      particle: "CRIT:20"
+      # Commande Kharvester (observée dans le workspace): khgive
+      command: "khgive {player_name} collector_iron 1"
+      consume-result: false
+      console-command: true
+
+  # COLLECTEUR KHARVESTER - Diamond (preview + give commande)
+  kharvester_collector_diamond:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "Kharvester"
+    success-rate: 100
+    permission: "kcraft.collector.diamond"
+    worlds: ["world"]
+
+    pattern:
+      - "DDD"
+      - "DHD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+      H:
+        material: "HOPPER"
+
+    result:
+      material: "ENDER_CHEST"
+      name: "&bCollecteur Diamond (Preview)"
+      lore:
+        - "&7Preview Kcraft"
+        - "&7L'item final est donné par Kharvester"
+
+    on-success:
+      message: "&a✓ Collecteur Tier III obtenu !"
+      sound: "BLOCK_ANVIL_USE"
+      particle: "CRIT_MAGIC:25"
+      # Commande Kharvester (observée dans le workspace): khgive
+      command: "khgive {player_name} collector_diamond 1"
+      consume-result: false
+      console-command: true

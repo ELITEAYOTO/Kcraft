@@ -1,0 +1,70 @@
+# ===============================================
+#          KCRAFT - Crafts Azurite
+#      Minerai custom et équipements avancés
+#   Avec attributs et durabilité configurables
+# ===============================================
+
+azurite:
+  # ================== LINGOT AZURITE (BASE) ==================
+  
+  azurite_ingot:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "DED"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        # Diamants vanilla
+      E:
+        material: "EMERALD"
+        # Émeraude vanilla
+    result:
+      material: "DIAMOND"
+      amount: 3
+      name: "&bLingot d'Azurite"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "azurite"
+        material: "azurite"
+        purity: 100
+      lore:
+        - "&7Minerai rare des profondeurs"
+        - "&bPureté: &f100%"
+        - "&aIngrédient pour équipements légendaires"
+        - ""
+        - "&8Créé par fusion diamant-émeraude"
+        
+  # ================== BÂTON EN AZURITE ==================
+  
+  azurite_stick:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 90
+    pattern:
+      - "DDD"
+      - "DBD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      B:
+        material: "STICK"
+    result:
+      material: "STICK"
+      amount: 1
+      name: "&bBâton en Azurite"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "azurite_stick"
+        material: "azurite"
+      lore:
+        - "&7Bâton forgé en azurite pur"
+        - "&aUtilisé pour crafts légendaires"
+        - ""
+        - "&8Minerai rare des profondeurs"

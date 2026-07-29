@@ -1,0 +1,119 @@
+# ===============================================
+#              KCRAFT - Configuration
+# Plugin de craft custom pour serveur PvP 1.8.8
+# ===============================================
+
+Kcraft:
+  # Configuration générale
+  settings:
+    prefix: "&8[&6Kcraft&8]"
+    debug-level: 2
+    enabled-worlds: 
+      - "world"
+      - "world_nether" 
+      - "world_faction"
+    
+  # Optimisations performance
+  performance:
+    cache-popular-crafts: true
+    instant-compact: true # Pas de délai pour compactage
+    async-logging: true
+    smart-cache-size: 50
+
+  # Restrictions d'obtention vanilla. Les crafts KCraft restent autorises.
+  # Dans une recette <= 3x3, ajouter `tags: [kcraft_tier1_only]` pour la
+  # reserver a la table custom tier1.
+  restrictions:
+    blocked-vanilla-craft-results:
+      - TRAPPED_CHEST
+    clean-generated-container-loot: true
+    blocked-generated-loot:
+      - TRAPPED_CHEST
+    
+  # Effets visuels
+  effects:
+    particles:
+      enabled: false # Par défaut off pour 1.8.8
+      allow-per-craft: true
+    sounds:
+      enabled: true
+      allow-per-craft: true
+      
+  # Style des GUI
+  gui:
+    use-borders: true # Bordures colorées
+    border-color: "GRAY"
+    border-material: "STAINED_GLASS_PANE"
+    title-prefix: "&8"
+    
+  # Système de logs JSON
+  logging:
+    enabled: true
+    file: "crafts-history.json"
+    log-per-player: true
+    log-faction-stats: true
+    rotation: "DAILY" # DAILY, WEEKLY, MONTHLY
+    keep-days: 30
+    
+  # Table de craft custom (4x4)
+  custom-blocks:
+    tier1:
+      block: "PISTON"
+      size: "4x4"
+      permission: "kcraft.table.use"
+      name: "&6&lTable Antique"
+      
+  # GUI par commande (NPCs/Console/Admin)
+  command-tables:
+    npc_table:
+      command: "kcraft-npc-table"
+      size: "5x5"
+      title: "&8Table du Forgeron"
+      only-console-npc: true
+      
+    admin_table:
+      command: "kcraftadmin"
+      size: "9x9"
+      permission: "kcraft.admin.table"
+
+  # Optimisations spécifiques
+  optimizations:
+    # Crafts de compactage - ULTRA RAPIDE
+    instant-compact-items:
+      - "wheat_compact_*"
+      - "iron_compact_*"
+      - "gold_compact_*"
+    
+    # Cache intelligent
+    smart-cache:
+      enabled: true
+      cache-size: 50
+      refresh-interval: 300 # 5 minutes
+      
+    # Opérations asynchrones
+    async-operations:
+      - "logging"
+      - "particle-effects"  
+      - "sound-effects"
+      
+    # Batch crafting pour shift+click
+    batch-craft:
+      enabled: true
+      max-batch: 64
+      delay-between: 0 # Pas de délai pour compactage
+
+# Configuration de l'interface graphique
+gui:
+  # Vitres de décoration
+  glass-colors:
+    border: "GRAY"           # Couleur des bordures générales
+    craft-area: "GREEN"      # Couleur autour de la zone de craft
+    result-area: "YELLOW"    # Couleur autour du résultat
+    button-area: "BLUE"      # Couleur autour des boutons
+    
+  # Apparence
+  use-borders: true
+  border-item: "STAINED_GLASS_PANE"  # 1.8.8 compatible
+  
+  # Permissions bypass
+  ops-bypass-permissions: true  # Les OPs ignorent les permissions de craft

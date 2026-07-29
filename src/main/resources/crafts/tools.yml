@@ -1,0 +1,582 @@
+# ===============================================
+#          KCRAFT - Crafts TOOLS
+#      Minerai custom et équipements avancés
+#   Avec attributs et durabilité configurables
+# ===============================================
+
+tools:
+  # ================== Outils EN AZURITE ==================
+  
+  azurite_sword:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " D "
+      - " D "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_SWORD"
+      amount: 1
+      name: "&5Épée en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azuritesword"
+        material: "azurite"
+        cit-model: "azurite_sword"
+        tool-piece: "sword"
+  
+  azurite_hammer:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - "DSD"
+      - " S "
+    ingredients:
+      D:
+        material: "REDSTONE_LAMP_OFF"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_PICKAXE"
+      amount: 1
+      name: "&5Marteau en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "Hammer2"
+        material: "azurite"
+        cit-model: "azurite_hammer"
+        tool-piece: "hammer"
+
+  azurite_pickaxe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_PICKAXE"
+      amount: 1
+      name: "&5Pioche en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azuritepickaxe"
+        material: "azurite"
+        cit-model: "azurite_pickaxe"
+        tool-piece: "pickaxe"
+  
+  azurite_axe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " DD"
+      - " SD"
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_AXE"
+      amount: 1
+      name: "&5Hache en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azuriteaxe"
+        material: "azurite"
+        cit-model: "azurite_axe"
+        tool-piece: "axe"
+  
+  azurite_axe2:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DD "
+      - "DS "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_AXE"
+      amount: 1
+      name: "&5Hache en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azuriteaxe"
+        material: "azurite"
+        cit-model: "azurite_axe"
+        tool-piece: "axe"
+  
+  azurite_shovel:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " D "
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_SPADE"
+      amount: 1
+      name: "&5Pelle en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azuriteshovel"
+        material: "azurite"
+        cit-model: "azurite_shovel"
+        tool-piece: "shovel"
+  
+  azurite_hoe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " DD"
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_HOE"
+      amount: 1
+      name: "&5Houes en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azuritehoe"
+        material: "azurite"
+        cit-model: "azurite_hoe"
+        tool-piece: "hoe"
+  
+  azurite_hoe2:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DD "
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_HOE"
+      amount: 1
+      name: "&5Houes en Azurite"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "azuritehoe"
+        material: "azurite"
+        cit-model: "azurite_hoe"
+        tool-piece: "hoe"
+        
+  # ================== Armure EN Jaspe ==================
+
+  jaspe_sword:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " D "
+      - " D "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_SWORD"
+      amount: 1
+      name: "&cÉpée en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspesword"
+        material: "jaspe"
+        cit-model: "jaspe_sword"
+        tool-piece: "sword"
+
+  jaspe_pickaxe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_PICKAXE"
+      amount: 1
+      name: "&cPioche en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspepickaxe"
+        material: "jaspe"
+        cit-model: "jaspe_pickaxe"
+        tool-piece: "pickaxe"
+  
+  jaspe_axe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " DD"
+      - " SD"
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_AXE"
+      amount: 1
+      name: "&cHache en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspeaxe"
+        material: "jaspe"
+        cit-model: "jaspe_axe"
+        tool-piece: "axe"
+  
+  jaspe_axe2:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DD "
+      - "DS "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_AXE"
+      amount: 1
+      name: "&cHache en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspeaxe"
+        material: "jaspe"
+        cit-model: "jaspe_axe"
+        tool-piece: "axe"
+  
+  jaspe_shovel:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " D "
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_SPADE"
+      amount: 1
+      name: "&cPelle en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspeshovel"
+        material: "jaspe"
+        cit-model: "jaspe_shovel"
+        tool-piece: "shovel"
+  
+  jaspe_hoe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " DD"
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_HOE"
+      amount: 1
+      name: "&cHoues en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspehoe"
+        material: "jaspe"
+        cit-model: "jaspe_hoe"
+        tool-piece: "hoe"
+  
+  jaspe_hoe2:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DD "
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_HOE"
+      amount: 1
+      name: "&cHoues en Jaspe"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "jaspehoe"
+        material: "jaspe"
+        cit-model: "jaspe_hoe"
+        tool-piece: "hoe"
+  
+  # ================== Armure EN Saphir ==================
+
+  saphir_sword:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " D "
+      - " D "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_SWORD"
+      amount: 1
+      name: "&3Épée en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphirsword"
+        material: "saphir"
+        cit-model: "saphir_sword"
+        tool-piece: "sword"
+  
+  saphir_pickaxe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DDD"
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_PICKAXE"
+      amount: 1
+      name: "&3Pioche en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphirpickaxe"
+        material: "saphir"
+        cit-model: "saphir_pickaxe"
+        tool-piece: "pickaxe"
+  
+  saphir_axe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " DD"
+      - " SD"
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_AXE"
+      amount: 1
+      name: "&3Hache en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphiraxe"
+        material: "saphir"
+        cit-model: "saphir_axe"
+        tool-piece: "axe"
+  
+  saphir_axe2:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DD "
+      - "DS "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_AXE"
+      amount: 1
+      name: "&3Hache en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphiraxe"
+        material: "saphir"
+        cit-model: "saphir_axe"
+        tool-piece: "axe"
+  
+  saphir_shovel:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " D "
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_SPADE"
+      amount: 1
+      name: "&3Pelle en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphirshovel"
+        material: "saphir"
+        cit-model: "saphir_shovel"
+        tool-piece: "shovel"
+  
+  saphir_hoe:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - " DD"
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_HOE"
+      amount: 1
+      name: "&3Houes en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphirhoe"
+        material: "saphir"
+        cit-model: "saphir_hoe"
+        tool-piece: "hoe"
+  
+  saphir_hoe2:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 100
+    pattern:
+      - "DD "
+      - " S "
+      - " S "
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+      S:
+        material: "STICK"
+    result:
+      material: "DIAMOND_HOE"
+      amount: 1
+      name: "&3Houes en Saphir"
+      enchanted: false
+      nbt:
+        sparrowmc-item: "saphirhoe"
+        material: "saphir"
+        cit-model: "saphir_hoe"
+        tool-piece: "hoe"

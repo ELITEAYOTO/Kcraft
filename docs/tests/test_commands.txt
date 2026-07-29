@@ -1,0 +1,50 @@
+# Test commands pour les items avec NBT
+# ========================================
+
+# OutilsEvolutif - Outils T1-T3
+/ge pioche_bois_t1 1
+/ge pioche_bois_t2 1  
+/ge pioche_bois_t3 1
+/ge hache_bois_t1 1
+/ge hache_bois_t2 1
+/ge hache_bois_t3 1
+
+# Cultures T1-T3
+/ge wheat_t1 9
+/ge wheat_t2 9
+/ge wheat_t3 9
+/ge carrot_t1 9
+/ge carrot_t2 9
+/ge carrot_t3 9
+/ge potato_t1 9
+/ge potato_t2 9
+/ge potato_t3 9
+/ge nether_wart_t1 9
+/ge nether_wart_t2 9
+/ge nether_wart_t3 9
+/ge melon_slice_t1 9
+/ge melon_slice_t2 9
+/ge melon_slice_t3 9
+/ge pumpkin_t1 9
+/ge pumpkin_t2 9
+/ge pumpkin_t3 9
+/ge cocoa_beans_t1 9
+/ge cocoa_beans_t2 9
+/ge cocoa_beans_t3 9
+
+# Mob Drops T1-T3
+/ge string_t1 9
+/ge string_t2 9
+/ge string_t3 9
+/ge rotten_flesh_t1 9
+/ge rotten_flesh_t2 9
+/ge rotten_flesh_t3 9
+/ge bone_t1 9
+/ge bone_t2 9
+/ge bone_t3 9
+
+# Azurite Equipment
+/ge azurite_ingot 9
+/ge azurite_sword 1
+/ge azurite_helmet 1
+/ge azurite_chestplate 1

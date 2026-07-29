@@ -1,0 +1,175 @@
+# ===============================================
+#          KCRAFT - Crafts Azurite
+#      Minerai custom et équipements avancés
+#   Avec attributs et durabilité configurables
+# ===============================================
+
+block:
+  # ================== LINGOT AZURITE (BASE) ==================
+        
+  # ================== BLOC D'AZURITE ==================
+  
+  azurite_block:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "DDD"
+      - "DDD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "REDSTONE_LAMP_OFF"
+      amount: 1
+      name: "&bBloc d'Azurite"
+      enchanted: false
+        
+  # ================== Bloc de jaspe ==================
+
+  jaspe_block:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "DDD"
+      - "DDD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "jaspe"
+    result:
+      material: "STONE"
+      data: 1
+      amount: 1
+      name: "&cBloc de Jaspe"
+      enchanted: false
+        
+  # ================== Block de Saphir ==================
+  
+  saphir_block:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "DDD"
+      - "DDD"
+      - "DDD"
+    ingredients:
+      D:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "saphir"
+    result:
+      material: "STONE"
+      data: 4
+      amount: 1
+      name: "&3Bloc de Saphir"
+      enchanted: false
+  
+  # ================== Cobble renforcer ==================
+  
+  reinforced_cobble:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - " SS"
+      - " SS"
+    ingredients:
+      S:
+        material: "COBBLESTONE"
+    result:
+      material: "STONE"
+      data: 2
+      amount: 1
+      name: "&7Pierre Renforcée"
+      enchanted: false
+
+  # ================== Obsidienne renforcée ==================
+  
+  reinforced_obsidian:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "OOO"
+      - "OAO"
+      - "OOO"
+    ingredients:
+      O:
+        material: "OBSIDIAN"
+      A:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "PRISMARINE"
+      data: 1
+      amount: 4
+      name: "&7Obsidienne Renforcée"
+      enchanted: false
+
+  # ================== Coffre azurite ==================
+  
+  azurite_chest:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "AAA"
+      - "ACA"
+      - "AAA"
+    ingredients:
+      C:
+        material: "CHEST"
+      A:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "TRAPPED_CHEST"
+      amount: 1
+      name: "&5Coffre en Azurite"
+      enchanted: false
+  
+  # ================== Bois en Azurite ==================
+  
+  azurite_wood:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "AAA"
+      - "ACA"
+      - "AAA"
+    ingredients:
+      C:
+        material: "WOOD"
+        data: 0
+      A:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "azurite"
+    result:
+      material: "PRISMARINE"
+      data: 0
+      amount: 1
+      name: "&5Bois en Azurite"
+      enchanted: false
+
+
+
+

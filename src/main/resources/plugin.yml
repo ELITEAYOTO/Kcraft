@@ -1,0 +1,44 @@
+name: Kcraft
+version: 1.0.0
+main: me.krunsh.kcraft.Kcraft
+api-version: 1.8
+author: Krunsh
+description: Plugin de craft custom pour serveur PvP faction 1.8.8
+
+softdepend: [Kfaction, Vault, PlaceholderAPI, Multiverse-Inventories, OutilsEvolutif, Kharvester, PluginCIT]
+
+commands:
+  kcraft:
+    description: Commande principale de Kcraft
+    usage: /<command> [reload|give|list|givetable|info|stats]
+    permission: kcraft.use
+    
+  kcraft-npc:
+    description: Commande spéciale pour NPCs/Console
+    usage: /<command> [table]
+    permission: kcraft.npc
+
+permissions:
+  kcraft.*:
+    description: Toutes les permissions Kcraft
+    children:
+      kcraft.use: true
+      kcraft.admin: true
+      kcraft.craft.table: true
+      kcraft.table.*: true
+      
+  kcraft.use:
+    description: Permission basique pour utiliser Kcraft
+    default: true
+    
+  kcraft.admin:
+    description: Permission admin (reload, give, etc.)
+    default: op
+
+  kcraft.craft.table:
+    description: Crafter la Table Antique via table vanilla
+    default: true
+    
+  kcraft.table.use:
+    description: Utiliser la Table Antique (4x4)
+    default: true

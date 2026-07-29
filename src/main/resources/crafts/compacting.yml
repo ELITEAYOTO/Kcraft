@@ -1,0 +1,1048 @@
+# ===============================================
+#          KCRAFT - Crafts de Compactage
+#     Système de cultures et minerais compactés
+# ===============================================
+
+compacting:
+  # ================== CULTURES COMPACTÉES ==================
+  
+  # BLÉ VANILLA → T1 (Input vanilla, pas de NBT requis)
+  wheat_vanilla_to_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "WWW"
+      - "WWW" 
+      - "WWW"
+    ingredients:
+      W:
+        material: "WHEAT"
+        # Pas de NBT - accepte blé vanilla
+    result:
+      material: "HAY_BLOCK"
+      amount: 1
+      name: "&eBlé Compacté T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "wheat_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&79x Blé Vanilla → 1x Blé T1"
+        - "&aUtilisé pour les crafts avancés"
+        - "&8Craft suivant: 9x T1 → 1x T2"
+        
+  # DÉCRAFT BLÉ T1 → 9x Vanilla
+  wheat_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "HAY_BLOCK"
+        nbt:
+          sparrowmc-item: "wheat_t1"
+    result:
+      material: "WHEAT"
+      amount: 9
+      name: "&fBlé"
+      lore:
+        - "&7Récupéré depuis Blé T1"
+        
+  # BLÉ COMPACTÉ - Tier 2
+  wheat_compact_t2:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "WWW"
+      - "WWW"
+      - "WWW"
+    ingredients:
+      W:
+        material: "HAY_BLOCK"
+        nbt:
+          sparrowmc-item: "wheat_t1"
+    result:
+      material: "HAY_BLOCK"
+      amount: 1
+      name: "&6Blé Compacté T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "wheat_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&79x Blé T1 → 1x Blé Compacté T2"
+        - "&aUtilisé pour les crafts experts"
+        - "&b+25% Valeur de vente"
+        
+  # DÉCRAFT BLÉ T2 → 9x T1
+  wheat_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "HAY_BLOCK"
+        nbt:
+          sparrowmc-item: "wheat_t2"
+    result:
+      material: "HAY_BLOCK"
+      amount: 9
+      name: "&eBlé Compacté T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "wheat_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Blé T2"
+        
+  # BLÉ COMPACTÉ - Tier 3  
+  wheat_compact_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "WWW"
+      - "WWW"
+      - "WWW"
+    ingredients:
+      W:
+        material: "HAY_BLOCK"
+        nbt:
+          sparrowmc-item: "wheat_t2"
+    result:
+      material: "HAY_BLOCK"
+      amount: 1
+      name: "&c&lBlé Compacté T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "wheat_t3"
+        tier: 3
+        type: "culture"
+      lore:
+        - "&79x Blé T2 → 1x Blé Compacté T3"
+        - "&cNiveau maximum de compactage"
+        - "&e+50% Valeur de vente"
+        - "&dUtilisé dans les recettes légendaires"
+        
+  # DÉCRAFT BLÉ T3 → 9x T2
+  wheat_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "HAY_BLOCK"
+        nbt:
+          sparrowmc-item: "wheat_t3"
+    result:
+      material: "HAY_BLOCK"
+      amount: 9
+      name: "&6Blé Compacté T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "wheat_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Blé T3"
+
+  # ================== CAROTTES COMPACTÉES ==================
+  
+  # CAROTTE VANILLA → T1 (Input vanilla, pas de NBT requis)
+  carrot_vanilla_to_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "CCC"
+      - "CCC"
+      - "CCC"
+    ingredients:
+      C:
+        material: "CARROT_ITEM"
+        # Pas de NBT - accepte carotte vanilla
+    result:
+      material: "CARROT_ITEM"
+      amount: 1
+      name: "&6Carotte Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "carrot_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&79x Carotte Vanilla → 1x Carotte T1"
+        - "&aIngredient pour crafts avancés"
+        - "&8Craft suivant: 9x T1 → 1x T2"
+        
+  # DÉCRAFT CAROTTE T1 → 9x Vanilla
+  carrot_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "CARROT_ITEM"
+        nbt:
+          sparrowmc-item: "carrot_t1"
+    result:
+      material: "CARROT_ITEM"
+      amount: 9
+      name: "&6Carotte"
+      lore:
+        - "&7Récupéré depuis Carotte T1"
+        
+  # CAROTTE COMPACTÉE - Tier 2
+  carrot_compact_t2:
+    type: "SHAPED"  
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "CCC"
+      - "CCC"
+      - "CCC"
+    ingredients:
+      C:
+        material: "CARROT_ITEM"
+        nbt:
+          sparrowmc-item: "carrot_t1"
+    result:
+      material: "CARROT_ITEM"
+      amount: 1
+      name: "&6&lCarotte Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "carrot_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&716x Carotte T1 → 1x Carotte T2"
+        - "&b+25% Efficacité nutrition"
+        
+  # DÉCRAFT CAROTTE T2 → 9x T1
+  carrot_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "CARROT_ITEM"
+        nbt:
+          sparrowmc-item: "carrot_t2"
+    result:
+      material: "CARROT_ITEM"
+      amount: 9
+      name: "&6Carotte Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "carrot_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Carotte T2"
+        
+  # CAROTTE COMPACTÉE - Tier 3
+  carrot_compact_t3:
+    type: "SHAPED"
+    table: "tier1" 
+    instant-craft: true
+    cached: true
+    pattern:
+      - "CCCC"
+      - "CCCC"
+      - "CCCC"
+      - "CCCC"
+    ingredients:
+      C:
+        material: "CARROT_ITEM"
+        nbt:
+          sparrowmc-item: "carrot_t2"
+    result:
+      material: "CARROT_ITEM"
+      amount: 1
+      name: "&c&lCarotte Compactée T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "carrot_t3"
+        tier: 3
+        type: "culture"
+      lore:
+        - "&716x Carotte T2 → 1x Carotte T3"
+        - "&cNiveau maximum"
+        - "&e+50% Nutrition et saturation"
+        
+  # DÉCRAFT CAROTTE T3 → 16x T2
+  carrot_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "CARROT_ITEM"
+        nbt:
+          sparrowmc-item: "carrot_t3"
+    result:
+      material: "CARROT_ITEM"
+      amount: 16
+      name: "&6&lCarotte Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "carrot_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Carotte T3"
+  # ================== POMMES DE TERRE COMPACTÉES ==================
+  
+  # POMME DE TERRE COMPACTÉE - Tier 1
+  potato_compact_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+    ingredients:
+      P:
+        material: "POTATO_ITEM"
+    result:
+      material: "POTATO_ITEM"
+      amount: 1
+      name: "&ePomme de Terre Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "potato_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&716x Pomme de Terre → 1x Compactée T1"
+        - "&aBase pour crafts farming"
+        
+  # DÉCRAFT POMME T1 → 16x Vanilla
+  potato_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "POTATO_ITEM"
+        nbt:
+          sparrowmc-item: "potato_t1"
+    result:
+      material: "POTATO_ITEM"
+      amount: 16
+      name: "&ePomme de Terre"
+      lore:
+        - "&7Récupéré depuis Pomme T1"
+        
+  # POMME DE TERRE COMPACTÉE - Tier 2
+  potato_compact_t2:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+    ingredients:
+      P:
+        material: "POTATO_ITEM"
+        nbt:
+          sparrowmc-item: "potato_t1"
+    result:
+      material: "POTATO_ITEM"
+      amount: 1
+      name: "&6&lPomme de Terre Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "potato_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&716x Pomme T1 → 1x Pomme T2"
+        - "&b+25% Saturation"
+        
+  # DÉCRAFT POMME T2 → 16x T1
+  potato_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "POTATO_ITEM"
+        nbt:
+          sparrowmc-item: "potato_t2"
+    result:
+      material: "POTATO_ITEM"
+      amount: 16
+      name: "&ePomme de Terre Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "potato_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Pomme T2"
+        
+  # POMME DE TERRE COMPACTÉE - Tier 3
+  potato_compact_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+    ingredients:
+      P:
+        material: "POTATO_ITEM"
+        nbt:
+          sparrowmc-item: "potato_t2"
+    result:
+      material: "POTATO_ITEM"
+      amount: 1
+      name: "&c&lPomme de Terre Compactée T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "potato_t3"
+        tier: 3
+        type: "culture"
+      lore:
+        - "&716x Pomme T2 → 1x Pomme T3"
+        - "&cNiveau maximum"
+        - "&e+50% Saturation et durée"
+        
+  # DÉCRAFT POMME T3 → 16x T2
+  potato_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "POTATO_ITEM"
+        nbt:
+          sparrowmc-item: "potato_t3"
+    result:
+      material: "POTATO_ITEM"
+      amount: 16
+      name: "&6&lPomme de Terre Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "potato_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Pomme T3"
+  # ================== VERRUES DU NETHER COMPACTÉES ==================
+  
+  # VERRUE DU NETHER COMPACTÉE - Tier 1
+  nether_wart_compact_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "WWWW"
+      - "WWWW"
+      - "WWWW"
+      - "WWWW"
+    ingredients:
+      W:
+        material: "NETHER_STALK"
+    result:
+      material: "NETHER_STALK"
+      amount: 1
+      name: "&cVerrue Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "nether_wart_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&716x Verrue → 1x Verrue Compactée T1"
+        - "&5Ingrédient alchimique puissant"
+        
+  # DÉCRAFT VERRUE T1 → 16x Vanilla
+  nether_wart_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "NETHER_STALK"
+        nbt:
+          sparrowmc-item: "nether_wart_t1"
+    result:
+      material: "NETHER_STALK"
+      amount: 16
+      name: "&cVerrue du Nether"
+      lore:
+        - "&7Récupéré depuis Verrue T1"
+        
+  # VERRUE DU NETHER COMPACTÉE - Tier 2
+  nether_wart_compact_t2:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "WWWW"
+      - "WWWW"
+      - "WWWW"
+      - "WWWW"
+    ingredients:
+      W:
+        material: "NETHER_STALK"
+        nbt:
+          sparrowmc-item: "nether_wart_t1"
+    result:
+      material: "NETHER_STALK"
+      amount: 1
+      name: "&c&lVerrue Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "nether_wart_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&716x Verrue T1 → 1x Verrue T2"
+        - "&5Alchimie niveau supérieur"
+        
+  # DÉCRAFT VERRUE T2 → 16x T1
+  nether_wart_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "NETHER_STALK"
+        nbt:
+          sparrowmc-item: "nether_wart_t2"
+    result:
+      material: "NETHER_STALK"
+      amount: 16
+      name: "&cVerrue Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "nether_wart_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Verrue T2"
+        
+  # VERRUE DU NETHER COMPACTÉE - Tier 3
+  nether_wart_compact_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "WWWW"
+      - "WWWW"
+      - "WWWW"
+      - "WWWW"
+    ingredients:
+      W:
+        material: "NETHER_STALK"
+        nbt:
+          sparrowmc-item: "nether_wart_t2"
+    result:
+      material: "NETHER_STALK"
+      amount: 1
+      name: "&4&lVerrue Compactée T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "nether_wart_t3"
+        tier: 3
+        type: "culture"
+      lore:
+        - "&716x Verrue T2 → 1x Verrue T3"
+        - "&4Alchimie légendaire"
+        - "&dIngredient pour potions mythiques"
+        
+  # DÉCRAFT VERRUE T3 → 16x T2
+  nether_wart_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "NETHER_STALK"
+        nbt:
+          sparrowmc-item: "nether_wart_t3"
+    result:
+      material: "NETHER_STALK"
+      amount: 16
+      name: "&c&lVerrue Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "nether_wart_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Verrue T3"
+        
+  # ================== PASTÈQUES COMPACTÉES ==================
+  
+  # PASTÈQUE COMPACTÉE - Tier 1
+  watermelon_compact_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "MMM"
+      - "MMM"
+      - "MMM"
+    ingredients:
+      M:
+        material: "MELON"
+    result:
+      material: "MELON"
+      amount: 1
+      name: "&aPastèque Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "watermelon_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&79x Pastèque → 1x Compactée T1"
+        - "&aBase pour crafts avancés"
+        
+  # DÉCRAFT PASTÈQUE T1 → 9x Vanilla
+  watermelon_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "MELON"
+        nbt:
+          sparrowmc-item: "watermelon_t1"
+    result:
+      material: "MELON"
+      amount: 9
+      name: "&aPastèque"
+      lore:
+        - "&7Récupéré depuis Pastèque T1"
+        
+  # PASTÈQUE COMPACTÉE - Tier 2
+  watermelon_compact_t2:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "MMM"
+      - "MMM"
+      - "MMM"
+    ingredients:
+      M:
+        material: "MELON"
+        nbt:
+          sparrowmc-item: "watermelon_t1"
+    result:
+      material: "MELON"
+      amount: 1
+      name: "&a&lPastèque Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "watermelon_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&79x Pastèque T1 → 1x Compactée T2"
+        - "&b+25% Nutrition"
+        
+  # DÉCRAFT PASTÈQUE T2 → 9x T1
+  watermelon_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "MELON"
+        nbt:
+          sparrowmc-item: "watermelon_t2"
+    result:
+      material: "MELON"
+      amount: 9
+      name: "&aPastèque Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "watermelon_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Pastèque T2"
+        
+  # PASTÈQUE COMPACTÉE - Tier 3
+  watermelon_compact_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "MMM"
+      - "MMM"
+      - "MMM"
+    ingredients:
+      M:
+        material: "MELON"
+        nbt:
+          sparrowmc-item: "watermelon_t2"
+    result:
+      material: "MELON"
+      amount: 1
+      name: "&a&lPastèque Compactée T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "watermelon_t3"
+        tier: 3
+        type: "culture"
+      lore:
+        - "&79x Pastèque T2 → 1x Compactée T3"
+        - "&aIngrédient pour houe évolutive"
+        - "&e+50% Nutrition et saturation"
+        
+  # DÉCRAFT PASTÈQUE T3 → 9x T2
+  watermelon_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "MELON"
+        nbt:
+          sparrowmc-item: "watermelon_t3"
+    result:
+      material: "MELON"
+      amount: 9
+      name: "&a&lPastèque Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "watermelon_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Pastèque T3"
+  # ================== CITROUILLES COMPACTÉES ==================
+        
+  # CITROUILLE COMPACTÉE - Tier 1
+  pumpkin_compact_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "PPP"
+      - "PPP"
+      - "PPP"
+    ingredients:
+      P:
+        material: "PUMPKIN"
+    result:
+      material: "PUMPKIN"
+      amount: 1
+      name: "&6Citrouille Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "pumpkin_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&79x Citrouille → 1x Compactée T1"
+        - "&6Base pour crafts avancés"
+        
+  # DÉCRAFT CITROUILLE T1 → 9x Vanilla
+  pumpkin_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "PUMPKIN"
+        nbt:
+          sparrowmc-item: "pumpkin_t1"
+    result:
+      material: "PUMPKIN"
+      amount: 9
+      name: "&6Citrouille"
+      lore:
+        - "&7Récupéré depuis Citrouille T1"
+        
+  # CITROUILLE COMPACTÉE - Tier 2
+  pumpkin_compact_t2:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "PPP"
+      - "PPP"
+      - "PPP"
+    ingredients:
+      P:
+        material: "PUMPKIN"
+        nbt:
+          sparrowmc-item: "pumpkin_t1"
+    result:
+      material: "PUMPKIN"
+      amount: 1
+      name: "&6&lCitrouille Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "pumpkin_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&79x Citrouille T1 → 1x Compactée T2"
+        - "&6+25% Efficacité"
+        
+  # DÉCRAFT CITROUILLE T2 → 9x T1
+  pumpkin_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "PUMPKIN"
+        nbt:
+          sparrowmc-item: "pumpkin_t2"
+    result:
+      material: "PUMPKIN"
+      amount: 9
+      name: "&6Citrouille Compactée T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "pumpkin_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Citrouille T2"
+        
+  # CITROUILLE COMPACTÉE - Tier 3
+  pumpkin_compact_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "PPP"
+      - "PPP"
+      - "PPP"
+    ingredients:
+      P:
+        material: "PUMPKIN"
+        nbt:
+          sparrowmc-item: "pumpkin_t2"
+    result:
+      material: "PUMPKIN"
+      amount: 1
+      name: "&6&lCitrouille Compactée T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "pumpkin_t3"
+        tier: 3
+        type: "culture"
+      lore:
+        - "&79x Citrouille T2 → 1x Compactée T3"
+        - "&6Ingrédient pour hache évolutive"
+        - "&e+50% Rendement"
+        
+  # DÉCRAFT CITROUILLE T3 → 9x T2
+  pumpkin_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "PUMPKIN"
+        nbt:
+          sparrowmc-item: "pumpkin_t3"
+    result:
+      material: "PUMPKIN"
+      amount: 9
+      name: "&6&lCitrouille Compactée T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "pumpkin_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Citrouille T3"
+  # ================== CACAO COMPACTÉ ==================
+        
+  # CACAO COMPACTÉ - Tier 1
+  cocoa_compact_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "CCC"
+      - "CCC"
+      - "CCC"
+    ingredients:
+      C:
+        material: "INK_SACK"
+        data: 3  # Cacao beans
+    result:
+      material: "INK_SACK"
+      data: 3
+      amount: 1
+      name: "&cCacao Compacté T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "cocoa_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&79x Cacao → 1x Compacté T1"
+        - "&cBase pour crafts avancés"
+        
+  # DÉCRAFT CACAO T1 → 9x Vanilla
+  cocoa_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "INK_SACK"
+        data: 3
+        nbt:
+          sparrowmc-item: "cocoa_t1"
+    result:
+      material: "INK_SACK"
+      data: 3
+      amount: 9
+      name: "&cFèves de Cacao"
+      lore:
+        - "&7Récupéré depuis Cacao T1"
+        
+  # CACAO COMPACTÉ - Tier 2
+  cocoa_compact_t2:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "CCC"
+      - "CCC"
+      - "CCC"
+    ingredients:
+      C:
+        material: "INK_SACK"
+        data: 3
+        nbt:
+          sparrowmc-item: "cocoa_t1"
+    result:
+      material: "INK_SACK"
+      data: 3
+      amount: 1
+      name: "&c&lCacao Compacté T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "cocoa_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&79x Cacao T1 → 1x Compacté T2"
+        - "&c+25% Goût"
+        
+  # DÉCRAFT CACAO T2 → 9x T1
+  cocoa_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "INK_SACK"
+        data: 3
+        nbt:
+          sparrowmc-item: "cocoa_t2"
+    result:
+      material: "INK_SACK"
+      data: 3
+      amount: 9
+      name: "&cCacao Compacté T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "cocoa_t1"
+        tier: 1
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Cacao T2"
+        
+  # CACAO COMPACTÉ - Tier 3
+  cocoa_compact_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "CCC"
+      - "CCC"
+      - "CCC"
+    ingredients:
+      C:
+        material: "INK_SACK"
+        data: 3
+        nbt:
+          sparrowmc-item: "cocoa_t2"
+    result:
+      material: "INK_SACK"
+      data: 3
+      amount: 1
+      name: "&c&lCacao Compacté T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "cocoa_t3"
+        tier: 3
+        type: "culture"
+      lore:
+        - "&79x Cacao T2 → 1x Compacté T3"
+        - "&cIngrédient pour hache évolutive"
+        - "&e+50% Arôme et qualité"
+        
+  # DÉCRAFT CACAO T3 → 9x T2
+  cocoa_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "INK_SACK"
+        data: 3
+        nbt:
+          sparrowmc-item: "cocoa_t3"
+    result:
+      material: "INK_SACK"
+      data: 3
+      amount: 9
+      name: "&c&lCacao Compacté T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "cocoa_t2"
+        tier: 2
+        type: "culture"
+      lore:
+        - "&7Récupéré depuis Cacao T3"

@@ -1,0 +1,109 @@
+# ========================================
+#      TEST CORRECTIONS KCRAFT v2.0
+# ========================================
+
+# 🔧 TESTS OBLIGATOIRES :
+# 1. Uniquement table tier1 - PAS de tier2/tier3
+# 2. Carottes vanilla → Carotte T1 (9x carotte normale)
+# 3. Décraft T1 → 9x vanilla disponible 
+# 4. Collecteurs Kharvester réels (pas items fake)
+# 5. Azurite sur tier1 uniquement
+
+# ==========================================
+# 1. TEST CULTURES VANILLA → T1
+# ==========================================
+
+## A. Obtenir items vanilla (normaux) :
+/give @s carrot 64
+/give @s wheat 64
+/give @s potato 64
+/give @s nether_wart 64
+/give @s melon 64
+/give @s pumpkin 64
+/give @s cocoa_beans 64
+
+## B. Test craft CAROTTE VANILLA → T1 :
+# 1. Ouvrir table tier1 (/kcraft givetable @s tier1)
+# 2. Mettre 9x carottes VANILLA en pattern 3x3
+# 3. Doit donner: 1x Carotte T1 avec NBT
+# 4. Vérifier message: "&79x Carotte Vanilla → 1x Carotte T1"
+
+## C. Test DÉCRAFT T1 → Vanilla :
+# 1. Prendre la Carotte T1 obtenue
+# 2. La mettre seule dans table tier1 (shapeless)
+# 3. Doit donner: 9x carottes vanilla normales
+
+# ==========================================  
+# 2. TEST COLLECTEURS KHARVESTER
+# ==========================================
+
+## A. Obtenir matériaux vanilla :
+/give @s iron_ingot 8
+/give @s hopper 1
+
+## B. Test craft collecteur :
+# 1. Table tier1 
+# 2. Pattern: III / IHI / III (fer + hopper au centre)
+# 3. Doit exécuter: /khgive {player} collector_stone 1
+# 4. Tu dois recevoir un VRAI collecteur Kharvester
+
+# ==========================================
+# 3. TEST AZURITE (TIER1 SEULEMENT)
+# ==========================================
+
+## A. Obtenir items azurite :
+/ge azurite_ingot 9
+/ge azurite_sword 1
+
+## B. Vérifier crafts azurite sur tier1 :
+# - Tous les crafts azurite doivent fonctionner sur table tier1
+# - Aucune référence tier2/tier3 ne doit exister
+
+# ==========================================
+# 4. VÉRIFICATIONS SYSTÈME  
+# ==========================================
+
+## A. Tables interdites :
+# /kcraft givetable @s tier2  ← DOIT FAIL ou ne pas exister
+# /kcraft givetable @s tier3  ← DOIT FAIL ou ne pas exister
+
+## B. Debug NBT :
+# - Console doit montrer comparaisons NBT détaillées
+# - Messages "DEBUG NBT" avec clés trouvées/manquantes
+
+## C. Progression T1→T2→T3 :
+# 1. 9x carotte vanilla → 1x carotte T1
+# 2. 9x carotte T1 → 1x carotte T2  
+# 3. 9x carotte T2 → 1x carotte T3
+# 4. Décraft inverse disponible à chaque étape
+
+# ==========================================
+# 🎯 RÉSULTATS ATTENDUS
+# ==========================================
+
+# ✅ SUCCÈS si :
+# - Carottes vanilla acceptées pour craft T1
+# - Décraft T1→vanilla fonctionne  
+# - Collecteur Kharvester réel reçu
+# - Azurite craft sur tier1 seulement
+# - Aucune table tier2/tier3 disponible
+# - Debug NBT visible en console
+
+# ❌ ÉCHEC si :
+# - "NBT key 'sparrowmc-item' not found" pour carottes vanilla
+# - Tables tier2/tier3 accessibles
+# - Collecteurs donnent items fake
+# - Pas de décraft disponible
+
+# ==========================================
+# 📋 COMMANDES DEBUG
+# ==========================================
+
+# Activer debug NBT :
+# (Check la console pendant les crafts)
+
+# Vider inventaire :
+/clear
+
+# Reset position :
+/tp @s ~ ~ ~

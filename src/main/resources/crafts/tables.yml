@@ -1,0 +1,37 @@
+# ===============================================
+#         KCRAFT - Craft de la Table Antique
+#    Recette pour obtenir la table de craft 4x4
+# ===============================================
+
+tables:
+  # CRAFT - Table Antique 4x4
+  craft_table_antique:
+    type: "SHAPED"
+    table: "tier1"
+    enabled: true
+    success-rate: 100
+    permission: "kcraft.craft.table"
+    
+    pattern:
+      - "WWW"
+      - "WCW" 
+      - "WWW"
+    ingredients:
+      W:
+        material: "PRISMARINE"
+      C:
+        material: "DIAMOND"
+        nbt:
+          sparrowmc-item: "fragment_legendaire"
+    result:
+      material: "PISTON"
+      name: "&6&lTable Antique"
+      nbt:
+        kcraft-table-id: "tier1"
+        kcraft-table-type: "custom"
+      lore:
+        
+    on-success:
+      #message: "&a✓ &6&lTable Antique &acraftée!"
+      #sound: "ENTITY_PLAYER_LEVELUP"
+      #particle: "VILLAGER_HAPPY:10"

@@ -1,0 +1,214 @@
+# ===============================================
+#        KCRAFT - Outils Évolutifs Integration  
+#      Crafts pour le plugin OutilsEvolutif
+# ===============================================
+
+evolutive_tools:
+  # ================== HOUE ÉVOLUTIVE ==================
+  
+  evolutive_hoe:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "OutilsEvolutif"
+    success-rate: 75
+    faction-level-required: 5
+    pattern:
+      - "VPC"
+      - " B "
+      - " B "
+    ingredients:
+      V:
+        material: "NETHER_STALK"
+        nbt:
+          sparrowmc-item: "nether_wart_t3"
+      P:
+        material: "POTATO_ITEM"
+        nbt:
+          sparrowmc-item: "potato_t3"
+      C:
+        material: "CARROT_ITEM"
+        nbt:
+          sparrowmc-item: "carrot_t3"
+      B:
+        material: "STICK"
+        nbt:
+          sparrowmc-item: "azurite_stick"
+    result:
+      # Preview: Houe avec le CIT du plugin OutilsEvolutif
+      material: "DIAMOND_HOE"
+      amount: 1
+      name: "&a&lHoue Évolutive &7[Niveau 1]"
+      enchanted: true
+      nbt:
+        # NBT temporaire pour la preview - sera remplacé par l'outil réel
+        kcraft-preview-item: "Houe1_Sparrowmc"
+        sparrowmc-item: "evo_hoe_preview"
+        level: 1
+        xp: 0
+      lore:
+        - "&7Houe qui évolue avec l'usage"
+        - "&aNiveau: &f1 &7(0 XP)"
+        - "&bCapacité: &f3x3 &7farming"
+        - ""
+        - "&eÉvolue en farmant des cultures"
+        - "&8Plugin: OutilsEvolutif"
+        
+    # Action spéciale: donner l'outil via commande
+    on-success:
+      message: "&a✓ Houe évolutive craftée!"
+      sound: "ENTITY_PLAYER_LEVELUP"
+      particle: "VILLAGER_HAPPY:20"
+      command: "giveoutil hoe 1"
+      console-command: false
+      consume-result: false
+      
+  # ================== HACHE ÉVOLUTIVE ==================
+  
+  evolutive_axe:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "OutilsEvolutif"
+    success-rate: 100
+    faction-level-required: 7
+    pattern:
+      - "PC"
+      - "BA"
+      - "B "
+    ingredients:
+      P:
+        material: "MELON"
+        nbt:
+          sparrowmc-item: "watermelon_t3"
+      C:
+        material: "PUMPKIN"
+        nbt:
+          sparrowmc-item: "pumpkin_t3"
+      A:
+        material: "INK_SACK"
+        data: 3  # Cacao
+        nbt:
+          sparrowmc-item: "cocoa_t3"
+      B:
+        material: "STICK"
+        nbt:
+          sparrowmc-item: "azurite_stick"
+    result:
+      material: "DIAMOND_AXE"
+      amount: 1
+      name: "&6&lHache Évolutive &7[Niveau 1]"
+      enchanted: true
+      nbt:
+        kcraft-preview-item: "FarmAxe1"
+        sparrowmc-item: "evo_axe_preview"
+        level: 1
+        xp: 0
+      lore:
+        - "&7Hache qui évolue en coupant du bois"
+        - "&6Niveau: &f1 &7(0 XP)"
+        - "&bCapacité: &f5x5 &7tree cutting"
+        - ""
+        - "&eÉvolue en coupant des arbres"
+        - "&8Plugin: OutilsEvolutif"
+        
+    on-success:
+      message: "&a✓ Hache évolutive craftée!"
+      sound: "ENTITY_PLAYER_LEVELUP"
+      particle: "CRIT:15"
+      command: "giveoutil axe 1"
+      console-command: false
+      consume-result: false
+      
+  # ================== PIOCHE ÉVOLUTIVE ==================
+  
+  evolutive_pickaxe:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "OutilsEvolutif"
+    success-rate: 100
+    faction-level-required: 10
+    pattern:
+      - "BBB"
+      - " S "
+      - " S "
+    ingredients:
+      B:
+        material: "DIAMOND_BLOCK"
+        nbt:
+          sparrowmc-item: "azurite_block"
+      S:
+        material: "STICK"
+        nbt:
+          sparrowmc-item: "azurite_stick"
+    result:
+      material: "DIAMOND_PICKAXE"
+      amount: 1
+      name: "&b&lPioche Évolutive &7[Niveau 1]"
+      enchanted: true
+      nbt:
+        kcraft-preview-item: "FarmPick1"
+        sparrowmc-item: "FarmPick1"
+        level: 1
+        xp: 0
+      lore:
+        - "&7Pioche qui évolue en minant"
+        - "&bNiveau: &f1 &7(0 XP)"
+        - "&bCapacité: &f3x3 &7mining"
+        - "&eFortune automatique"
+        - ""
+        - "&eÉvolue en minant des minerais"
+        - "&8Plugin: OutilsEvolutif"
+        
+    on-success:
+      message: "&a✓ Pioche évolutive craftée!"
+      sound: "ENTITY_ENDERDRAGON_GROWL"
+      particle: "PORTAL:25"
+      command: "giveoutil pickaxe 1"
+      console-command: false
+      consume-result: false
+      
+  # ================== CANNE À PÊCHE ÉVOLUTIVE ==================
+  
+  evolutive_fishing_rod:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "OutilsEvolutif"
+    success-rate: 100
+    faction-level-required: 3
+    pattern:
+      - "  S"
+      - " SF"
+      - "S F"
+    ingredients:
+      S:
+        material: "STICK"
+        nbt:
+          sparrowmc-item: "azurite_stick"
+      F:
+        material: "STRING"
+        nbt:
+          sparrowmc-item: "string_t3"
+    result:
+      material: "FISHING_ROD"
+      amount: 1
+      name: "&3&lCanne à Pêche Évolutive &7[Niveau 1]"
+      enchanted: true
+      nbt:
+        kcraft-preview-item: "FarmRod1"
+        sparrowmc-item: "evo_fishing_rod_preview"
+        level: 1
+        xp: 0
+      lore:
+        - "&7Canne qui évolue en pêchant"
+        - "&3Niveau: &f1 &7(0 XP)"
+        - "&bCapacité: &fPêche améliorée"
+        - "&a+50% Chance poissons rares"
+        - ""
+        - "&eÉvolue en pêchant"
+        - "&8Plugin: OutilsEvolutif"
+        
+    on-success:
+      message: "&a✓ Canne à pêche évolutive craftée!"
+      sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+      command: "giveoutil fishing_rod 1"
+      console-command: false
+      consume-result: false

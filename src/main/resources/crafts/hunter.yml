@@ -1,0 +1,561 @@
+# ===============================================
+#         KCRAFT - Loots de Mobs Compactés
+#    Système T1, T2, T3 pour drops de monstres
+# ===============================================
+
+mob_drops:
+  # ================== FIL COMPACTÉ ==================
+  
+  # FIL COMPACTÉ - Tier 1
+  string_t1:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "SSS"
+      - "SSS"
+      - "SSS"
+    ingredients:
+      S:
+        material: "STRING"
+    result:
+      material: "STRING"
+      amount: 1
+      name: "&fFil Compacté T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "string_t1"
+        tier: 1
+        type: "mob_drop"
+      lore:
+        - "&79x Fil → 1x Fil Compacté T1"
+        - "&8Drop: Araignées"
+        
+  # FIL COMPACTÉ - Tier 2
+  string_t2:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "SSS"
+      - "SSS"
+      - "SSS"
+    ingredients:
+      S:
+        material: "STRING"
+        nbt:
+          sparrowmc-item: "string_t1"
+    result:
+      material: "STRING"
+      amount: 1
+      name: "&f&lFil Compacté T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "string_t2"
+        tier: 2
+        type: "mob_drop"
+      lore:
+        - "&79x Fil T1 → 1x Fil T2"
+        - "&a+25% Résistance"
+        
+  # FIL COMPACTÉ - Tier 3
+  string_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "SSS"
+      - "SSS"
+      - "SSS"
+    ingredients:
+      S:
+        material: "STRING"
+        nbt:
+          sparrowmc-item: "string_t2"
+    result:
+      material: "STRING"
+      amount: 1
+      name: "&f&lFil Renforcé T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "string_t3"
+        tier: 3
+        type: "mob_drop"
+      lore:
+        - "&79x Fil T2 → 1x Fil T3"
+        - "&aUtilisé pour cannes à pêche évolutives"
+        - "&e+50% Solidité"
+        
+  # DÉCRAFT FIL T3 → 9x T2
+  string_t3_to_t2:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "STRING"
+        nbt:
+          sparrowmc-item: "string_t3"
+    result:
+      material: "STRING"
+      amount: 9
+      name: "&f&lFil Compacté T2"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "string_t2"
+        tier: 2
+        type: "mob_drop"
+      lore:
+        - "&7Récupéré depuis Fil T3"
+        
+  # DÉCRAFT FIL T2 → 9x T1
+  string_t2_to_t1:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "STRING"
+        nbt:
+          sparrowmc-item: "string_t2"
+    result:
+      material: "STRING"
+      amount: 9
+      name: "&fFil Compacté T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "string_t1"
+        tier: 1
+        type: "mob_drop"
+      lore:
+        - "&7Récupéré depuis Fil T2"
+        
+  # DÉCRAFT FIL T1 → 9x Vanilla
+  string_t1_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "STRING"
+        nbt:
+          sparrowmc-item: "string_t1"
+    result:
+      material: "STRING"
+      amount: 9
+      name: "&fFil"
+      lore:
+        - "&7Récupéré depuis Fil T1"
+        
+  # CHAIR PUTRÉFIÉE TIER 3
+  rotten_flesh_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "FFFF"
+      - "FFFF"
+      - "FFFF"
+      - "FFFF"
+    ingredients:
+      F:
+        material: "ROTTEN_FLESH"
+    result:
+      material: "ROTTEN_FLESH"
+      amount: 1
+      name: "&2&lChair Putréfiée Concentrée T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "rotten_flesh_t3"
+        tier: 3
+        type: "mob_drop"
+      lore:
+        - "&716x Chair Putréfiée → 1x Concentrée T3"
+        - "&2Essence de non-mort concentrée"
+        - "&8Drop: Zombies"
+        
+  # DÉCRAFT CHAIR PUTRÉFIÉE T3 → 16x Vanilla
+  rotten_flesh_t3_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "ROTTEN_FLESH"
+        nbt:
+          sparrowmc-item: "rotten_flesh_t3"
+    result:
+      material: "ROTTEN_FLESH"
+      amount: 16
+      name: "&2Chair Putréfiée"
+      lore:
+        - "&7Récupéré depuis Chair T3"
+        
+  # BÂTON DE BLAZE TIER 3
+  blaze_rod_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    success-rate: 90
+    pattern:
+      - "BBBB"
+      - "BBBB"
+      - "BBBB"
+      - "BBBB"
+    ingredients:
+      B:
+        material: "BLAZE_ROD"
+    result:
+      material: "BLAZE_ROD"
+      amount: 1
+      name: "&c&lBâton de Blaze Suprême T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "blaze_rod_t3"
+        tier: 3
+        type: "mob_drop"
+        fire_power: 100
+      lore:
+        - "&716x Bâton de Blaze → 1x Suprême T3"
+        - "&cPuissance de feu maximale"
+        - "&eRésistance au feu permanente"
+        - "&8Drop: Blazes (Nether)"
+        
+  # DÉCRAFT BÂTON BLAZE T3 → 16x Vanilla
+  blaze_rod_t3_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "BLAZE_ROD"
+        nbt:
+          sparrowmc-item: "blaze_rod_t3"
+    result:
+      material: "BLAZE_ROD"
+      amount: 16
+      name: "&cBâton de Blaze"
+      lore:
+        - "&7Récupéré depuis Bâton T3"
+        
+  # OS TIER 3
+  bone_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "OOOO"
+      - "OOOO"
+      - "OOOO"
+      - "OOOO"
+    ingredients:
+      O:
+        material: "BONE"
+    result:
+      material: "BONE"
+      amount: 1
+      name: "&f&lOs Renforcé T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "bone_t3"
+        tier: 3
+        type: "mob_drop"
+      lore:
+        - "&716x Os → 1x Os Renforcé T3"
+        - "&fMatériau de construction solide"
+        - "&8Drop: Squelettes"
+        
+  # DÉCRAFT OS T3 → 16x Vanilla
+  bone_t3_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "BONE"
+        nbt:
+          sparrowmc-item: "bone_t3"
+    result:
+      material: "BONE"
+      amount: 16
+      name: "&fOs"
+      lore:
+        - "&7Récupéré depuis Os T3"
+        
+  # PERLE DE L'ENDER TIER 3
+  ender_pearl_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    success-rate: 95
+    pattern:
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+      - "PPPP"
+    ingredients:
+      P:
+        material: "ENDER_PEARL"
+    result:
+      material: "ENDER_PEARL"
+      amount: 1
+      name: "&5&lPerle de l'Ender Concentrée T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "ender_pearl_t3"
+        tier: 3
+        type: "mob_drop"
+        teleport_power: 300
+      lore:
+        - "&716x Perle Ender → 1x Concentrée T3"
+        - "&5Puissance de téléportation x3"
+        - "&dÉnergie dimensionnelle pure"
+        - "&8Drop: Endermen"
+        
+  # DÉCRAFT PERLE ENDER T3 → 16x Vanilla
+  ender_pearl_t3_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "ENDER_PEARL"
+        nbt:
+          sparrowmc-item: "ender_pearl_t3"
+    result:
+      material: "ENDER_PEARL"
+      amount: 16
+      name: "&5Perle de l'Ender"
+      lore:
+        - "&7Récupéré depuis Perle T3"
+        
+  # CUIR TIER 3
+  leather_t3:
+    type: "SHAPED"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    pattern:
+      - "LLLL"
+      - "LLLL"
+      - "LLLL"
+      - "LLLL"
+    ingredients:
+      L:
+        material: "LEATHER"
+    result:
+      material: "LEATHER"
+      amount: 1
+      name: "&6&lCuir Traité T3"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "leather_t3"
+        tier: 3
+        type: "mob_drop"
+      lore:
+        - "&716x Cuir → 1x Cuir Traité T3"
+        - "&6Qualité de maître tanneur"
+        - "&8Drop: Vaches, Chevaux"
+        
+  # DÉCRAFT CUIR T3 → 16x Vanilla
+  leather_t3_to_vanilla:
+    type: "SHAPELESS"
+    table: "tier1"
+    instant-craft: true
+    cached: true
+    ingredients:
+      - material: "LEATHER"
+        nbt:
+          sparrowmc-item: "leather_t3"
+    result:
+      material: "LEATHER"
+      amount: 16
+      name: "&6Cuir"
+      lore:
+        - "&7Récupéré depuis Cuir T3"
+        
+  # ================== BLOC DU CHASSEUR ==================
+  
+  hunter_block:
+    type: "SHAPED"
+    table: "tier1"
+    success-rate: 85
+    faction-level-required: 8
+    pattern:
+      - "FCB"
+      - "OEV"
+    ingredients:
+      F:
+        material: "STRING"
+        nbt:
+          sparrowmc-item: "string_t3"
+      C:
+        material: "ROTTEN_FLESH"
+        nbt:
+          sparrowmc-item: "rotten_flesh_t3"
+      B:
+        material: "BLAZE_ROD"
+        nbt:
+          sparrowmc-item: "blaze_rod_t3"
+      O:
+        material: "BONE"
+        nbt:
+          sparrowmc-item: "bone_t3"
+      E:
+        material: "ENDER_PEARL"
+        nbt:
+          sparrowmc-item: "ender_pearl_t3"
+      V:
+        material: "LEATHER"
+        nbt:
+          sparrowmc-item: "leather_t3"
+    result:
+      material: "OBSIDIAN"
+      amount: 1
+      name: "&4&lBloc du Chasseur"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "hunter_block"
+        type: "hunter_craft"
+        power: 500
+        mob_essence: 100
+      lore:
+        - "&7Bloc forgé avec l'essence des mobs"
+        - "&4Contient la puissance des créatures"
+        - "&cUtilisé pour épée légendaire"
+        - ""
+        - "&ePuissance: &f500"
+        - "&5Essence de mob: &f100%"
+        - ""
+        - "&8Matériau de craft légendaire"
+        
+    on-success:
+      message: "&4✓ Bloc du chasseur forgé avec l'essence des mobs!"
+      sound: "ENTITY_ENDERDRAGON_GROWL"
+      particle: "SMOKE_LARGE:50"
+      
+  # ================== ÉPÉE DU CHASSEUR LÉGENDAIRE ==================
+  
+  hunter_legendary_sword:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "OutilsEvolutif"
+    success-rate: 70
+    faction-level-required: 15
+    pattern:
+      - " H "
+      - " H "
+      - " S "
+    ingredients:
+      H:
+        material: "OBSIDIAN"
+        nbt:
+          sparrowmc-item: "hunter_block"
+      S:
+        material: "STICK"
+        nbt:
+          sparrowmc-item: "azurite_stick"
+    result:
+      material: "DIAMOND_SWORD"
+      amount: 1
+      name: "&4&l⚔ Épée du Chasseur Légendaire ⚔"
+      enchanted: true
+      nbt:
+        kcraft-preview-item: "FarmSword1"
+        sparrowmc-item: "FarmSword1"
+        level: 1
+        xp: 0
+        legendary: true
+      lore:
+        - "&7Épée légendaire du grand chasseur"
+        - "&4Niveau: &f1 &7(0 XP)"
+        - "&c+100% Dégâts contre les mobs"
+        - "&5+50% Vitesse d'attaque"
+        - "&e+25% Chance de drops rares"
+        - "&bVol de vie: 15%"
+        - ""
+        - "&dCapacité spéciale: Rage du chasseur"
+        - "&8Plugin: OutilsEvolutif"
+        
+    on-success:
+      message: "&4✓ ÉPÉE LÉGENDAIRE FORGÉE! La puissance du chasseur coule en elle!"
+      sound: "ENTITY_ENDERDRAGON_DEATH"
+      particle: "PORTAL:100"
+      command: "giveoutil sword 1"
+      consume-result: false
+      console-command: false
+      
+    on-fail:
+      message: "&c✗ La forge légendaire a échoué... L'essence s'évapore..."
+      sound: "ENTITY_GHAST_SCREAM"
+      
+  # ================== RÉCOLTEUSE DE CHUNK ==================
+  
+  chunk_harvester_t1:
+    type: "SHAPED"
+    table: "tier1"
+    enabled-if-plugin: "Kharvester"
+    success-rate: 90
+    faction-level-required: 10
+    worlds: ["world", "world_faction"]
+    pattern:
+      - "CMI"
+      - "BAP"
+    ingredients:
+      C:
+        material: "INK_SACK"
+        data: 3  # Cacao
+        nbt:
+          sparrowmc-item: "cocoa_t3"
+      M:
+        material: "MELON"
+        nbt:
+          sparrowmc-item: "watermelon_t3"
+      I:
+        material: "PUMPKIN"
+        nbt:
+          sparrowmc-item: "pumpkin_t3"
+      B:
+        material: "HAY_BLOCK"
+        nbt:
+          sparrowmc-item: "wheat_t3"
+      A:
+        material: "CARROT_ITEM"
+        nbt:
+          sparrowmc-item: "carrot_t3"
+      P:
+        material: "POTATO_ITEM"
+        nbt:
+          sparrowmc-item: "potato_t3"
+    result:
+      material: "HOPPER"
+      amount: 1
+      name: "&2&lRécolteuse de Chunk T1"
+      enchanted: true
+      nbt:
+        sparrowmc-item: "chunk_harvester_t1"
+        type: "harvester"
+        range: 16  # Chunk entier
+        auto_replant: true
+        storage: 27  # Slots
+      lore:
+        - "&7Récolteuse automatique de chunk"
+        - "&2Range: &fChunk entier (16x16)"
+        - "&aReplantation automatique"
+        - "&eStockage: 27 slots"
+        - "&bCollecte toutes les cultures"
+        - ""
+        - "&6Fonctionne même hors ligne"
+        - "&8Plugin: Kharvester"
+        
+    on-success:
+      message: "&2✓ Récolteuse de chunk T1 assemblée!"
+      sound: "BLOCK_ANVIL_USE"
+      particle: "VILLAGER_HAPPY:30"
