@@ -4,4 +4,6 @@
 *.iml
 *.class
 *.log
+*.jar
+/libs/
 dependency-reduced-pom.xml
