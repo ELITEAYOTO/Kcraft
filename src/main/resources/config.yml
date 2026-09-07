@@ -1,119 +1,88 @@
-# ===============================================
-#              KCRAFT - Configuration
-# Plugin de craft custom pour serveur PvP 1.8.8
-# ===============================================
+# =============================================================
+# KCraft V2.1 — Foundation / Volkaria
+# =============================================================
+# V2 utilise un schema strict. Les anciens namespaces et les anciennes
+# options de pseudo-cache ont volontairement été retirés.
+
+schema_version: 2
 
 Kcraft:
-  # Configuration générale
   settings:
     prefix: "&8[&6Kcraft&8]"
-    debug-level: 2
-    enabled-worlds: 
+    debug-level: 1
+    enabled-worlds:
       - "world"
-      - "world_nether" 
+      - "world_nether"
       - "world_faction"
-    
-  # Optimisations performance
-  performance:
-    cache-popular-crafts: true
-    instant-compact: true # Pas de délai pour compactage
-    async-logging: true
-    smart-cache-size: 50
+    ops-bypass-permissions: true
 
-  # Restrictions d'obtention vanilla. Les crafts KCraft restent autorises.
-  # Dans une recette <= 3x3, ajouter `tags: [kcraft_tier1_only]` pour la
-  # reserver a la table custom tier1.
+  # En V2.1 il n'existe PLUS de cache-popular-crafts/smart-cache-size.
+  # Le vrai RecipeIndex + MatrixFingerprint arrivera en V2.2/V2.3.
+  performance:
+    async-logging: true
+
   restrictions:
     blocked-vanilla-craft-results:
       - TRAPPED_CHEST
     clean-generated-container-loot: true
     blocked-generated-loot:
       - TRAPPED_CHEST
-    
-  # Effets visuels
+
   effects:
     particles:
-      enabled: false # Par défaut off pour 1.8.8
+      enabled: false
       allow-per-craft: true
     sounds:
       enabled: true
       allow-per-craft: true
-      
-  # Style des GUI
+
   gui:
-    use-borders: true # Bordures colorées
+    use-borders: true
     border-color: "GRAY"
-    border-material: "STAINED_GLASS_PANE"
+    border-item: "STAINED_GLASS_PANE"
     title-prefix: "&8"
-    
-  # Système de logs JSON
+    glass-colors:
+      craft-area: "GREEN"
+      result-area: "YELLOW"
+      button-area: "BLUE"
+
+  hooks:
+    # false = comportement tolerant si Kfaction n'est pas présent.
+    # true = toute recette faction-level-required est refusée sans Kfaction.
+    strict-faction-level: false
+
   logging:
     enabled: true
     file: "crafts-history.json"
     log-per-player: true
     log-faction-stats: true
-    rotation: "DAILY" # DAILY, WEEKLY, MONTHLY
+    rotation: "DAILY"
     keep-days: 30
-    
-  # Table de craft custom (4x4)
+
+  # Tables physiques: uniquement 3x3 / 4x4 / 5x5 en V2.
   custom-blocks:
     tier1:
       block: "PISTON"
       size: "4x4"
       permission: "kcraft.table.use"
       name: "&6&lTable Antique"
-      
-  # GUI par commande (NPCs/Console/Admin)
+
+  # Tables virtuelles: uniquement 3x3 / 4x4 / 5x5 en V2.
   command-tables:
     npc_table:
       command: "kcraft-npc-table"
       size: "5x5"
-      title: "&8Table du Forgeron"
+      name: "&8Table du Forgeron"
       only-console-npc: true
-      
+
     admin_table:
       command: "kcraftadmin"
-      size: "9x9"
+      size: "5x5"
+      name: "&8Table Admin"
       permission: "kcraft.admin.table"
 
-  # Optimisations spécifiques
   optimizations:
-    # Crafts de compactage - ULTRA RAPIDE
-    instant-compact-items:
-      - "wheat_compact_*"
-      - "iron_compact_*"
-      - "gold_compact_*"
-    
-    # Cache intelligent
-    smart-cache:
-      enabled: true
-      cache-size: 50
-      refresh-interval: 300 # 5 minutes
-      
-    # Opérations asynchrones
-    async-operations:
-      - "logging"
-      - "particle-effects"  
-      - "sound-effects"
-      
-    # Batch crafting pour shift+click
     batch-craft:
       enabled: true
+      # Garde-fou V2.1. Le planner batch optimisé arrive en V2.4.
       max-batch: 64
-      delay-between: 0 # Pas de délai pour compactage
-
-# Configuration de l'interface graphique
-gui:
-  # Vitres de décoration
-  glass-colors:
-    border: "GRAY"           # Couleur des bordures générales
-    craft-area: "GREEN"      # Couleur autour de la zone de craft
-    result-area: "YELLOW"    # Couleur autour du résultat
-    button-area: "BLUE"      # Couleur autour des boutons
-    
-  # Apparence
-  use-borders: true
-  border-item: "STAINED_GLASS_PANE"  # 1.8.8 compatible
-  
-  # Permissions bypass
-  ops-bypass-permissions: true  # Les OPs ignorent les permissions de craft

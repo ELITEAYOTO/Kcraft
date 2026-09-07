@@ -343,6 +343,28 @@ public final class VanillaCraftListener implements Listener {
         loggedAmbiguities.clear();
     }
 
+    /** Invalide les résultats de l'ancien catalogue uniquement après un reload accepté. */
+    public void refreshAfterReload() {
+        List<UUID> affected = new ArrayList<UUID>(previews.keySet());
+        shutdown();
+        for (UUID playerId : affected) {
+            try {
+                Player player = plugin.getServer().getPlayer(playerId);
+                if (player == null) continue;
+                InventoryView view = player.getOpenInventory();
+                if (view == null || !(view.getTopInventory() instanceof CraftingInventory)) continue;
+                CraftingInventory inventory = (CraftingInventory) view.getTopInventory();
+                inventory.setResult(null);
+                // Fermeture vanilla : le serveur restitue la matrice normalement.
+                // Ne pas fabriquer un ancien résultat natif à partir de getRecipe().
+                player.closeInventory();
+            } catch (RuntimeException error) {
+                plugin.getLogger().log(java.util.logging.Level.WARNING,
+                    "Fermeture d'une grille vanilla en erreur après reload", error);
+            }
+        }
+    }
+
     private void updatePreview(CraftingInventory inventory, Player player) {
         ItemStack[] matrix = inventory.getMatrix();
         VanillaRecipeResolver.Resolution resolution = resolve(matrix, player);

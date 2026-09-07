@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,679 +17,1264 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitTask;
 
 import me.krunsh.kcraft.Kcraft;
 import me.krunsh.kcraft.api.events.KcraftPreCraftEvent;
+import me.krunsh.kcraft.api.events.KcraftBatchCraftEvent;
+import me.krunsh.kcraft.api.execution.CraftBatchAccumulator;
+import me.krunsh.kcraft.api.execution.CraftExecutionContext;
+import me.krunsh.kcraft.api.execution.CraftExecutionSource;
+import me.krunsh.kcraft.batch.CraftBatchMetrics;
+import me.krunsh.kcraft.batch.CraftBatchPlan;
+import me.krunsh.kcraft.batch.CraftBatchPlanner;
+import me.krunsh.kcraft.compiled.CompiledRecipe;
 import me.krunsh.kcraft.gui.CraftTableGUI;
-import me.krunsh.kcraft.models.CraftIngredient;
+import me.krunsh.kcraft.gui.GuiDirtyRegistry;
+import me.krunsh.kcraft.gui.GuiRefreshMetrics;
+import me.krunsh.kcraft.gui.PreviewSelection;
+import me.krunsh.kcraft.matching.RecipeMatcher;
 import me.krunsh.kcraft.models.CraftMatrixTransaction;
 import me.krunsh.kcraft.models.CraftRecipe;
 import me.krunsh.kcraft.models.CraftResult;
-import me.krunsh.kcraft.models.CraftType;
 import me.krunsh.kcraft.utils.MessageUtil;
+import me.krunsh.kcraft.utils.SoundUtil;
 
 /**
- * Listener pour les interactions avec les GUI de craft
+ * Listener GUI V2.6.
+ *
+ * Optimisations :
+ * - DirtyQueue globale : plusieurs changements dans le même tick -> 1 refresh ;
+ * - Preview Lock : un résultat aléatoire affiché reste identique jusqu'au craft ;
+ * - UUID-only : aucun Player n'est retenu dans les registres.
  */
-public class CraftGUIListener implements Listener {
-    
+public final class CraftGUIListener
+        implements Listener {
+
     private final Kcraft plugin;
-    private final PlayerGuiRegistry<CraftTableGUI> activeGUIs;
-    
-    public CraftGUIListener(Kcraft plugin) {
+
+    private final PlayerGuiRegistry<CraftTableGUI> activeGUIs =
+        new PlayerGuiRegistry<CraftTableGUI>();
+
+    private final Map<UUID, PreviewSelection> previewSelections =
+        new HashMap<UUID, PreviewSelection>();
+
+    private final GuiDirtyRegistry dirty =
+        new GuiDirtyRegistry();
+
+    private final GuiRefreshMetrics guiMetrics =
+        new GuiRefreshMetrics();
+
+    private final CraftBatchPlanner batchPlanner =
+        new CraftBatchPlanner(
+            new RecipeMatcher()
+        );
+
+    private final CraftBatchMetrics batchMetrics =
+        new CraftBatchMetrics();
+
+    private BukkitTask dirtyTask;
+
+    public CraftGUIListener(
+            Kcraft plugin) {
+
         this.plugin = plugin;
-        this.activeGUIs = new PlayerGuiRegistry<CraftTableGUI>();
     }
-    
-    /**
-     * Enregistre une GUI active pour un joueur
-     */
-    public void registerGUI(Player player, CraftTableGUI gui) {
-        UUID playerId = player.getUniqueId();
-        cleanupPlayer(playerId, player, true);
-        activeGUIs.put(playerId, gui);
+
+    public void registerGUI(
+            Player player,
+            CraftTableGUI gui) {
+
+        UUID uuid =
+            player.getUniqueId();
+
+        cleanupPlayer(
+            uuid,
+            player,
+            true
+        );
+
+        activeGUIs.put(
+            uuid,
+            gui
+        );
+
+        markDirty(
+            uuid
+        );
     }
-    
-    /**
-     * Supprime une GUI active pour un joueur
-     */
-    public void unregisterGUI(Player player) {
-        cleanupPlayer(player.getUniqueId(), player, false);
+
+    public void unregisterGUI(
+            Player player) {
+
+        cleanupPlayer(
+            player.getUniqueId(),
+            player,
+            false
+        );
     }
-    
+
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) {
+    public void onInventoryClick(
+            InventoryClickEvent event) {
+
+        if (!(event.getWhoClicked()
+                instanceof Player)) {
+
             return;
         }
-        
-        Player player = (Player) event.getWhoClicked();
-        CraftTableGUI gui = activeGUIs.get(player.getUniqueId());
-        
+
+        Player player =
+            (Player) event.getWhoClicked();
+
+        UUID uuid =
+            player.getUniqueId();
+
+        CraftTableGUI gui =
+            activeGUIs.get(uuid);
+
         if (gui == null) {
             return;
         }
-        
-        int slot = event.getRawSlot();
-        
-        // Si c'est dans la GUI Kcraft
-        if (slot >= 0 && slot < gui.getInventory().getSize()) {
-            
-            // Bouton de craft - annuler et gérer manuellement
+
+        int slot =
+            event.getRawSlot();
+
+        if (slot >= 0
+                && slot < gui.getInventory()
+                    .getSize()) {
+
             if (gui.isCraftButton(slot)) {
                 event.setCancelled(true);
+
                 if (event.isLeftClick()) {
                     if (event.isShiftClick()) {
-                        handleMassCraft(player, gui);
+                        handleMassCraft(
+                            player,
+                            gui
+                        );
                     } else {
-                        handleCraftClick(player, gui);
+                        handleCraftClick(
+                            player,
+                            gui
+                        );
                     }
                 }
+
                 return;
             }
-            
-            // Slot de résultat - lecture seule
+
             if (gui.isResultSlot(slot)) {
                 event.setCancelled(true);
                 return;
             }
-            
-            // Slots de craft - laisser Bukkit gérer normalement
+
             if (gui.isModifiableSlot(slot)) {
-                // NE PAS ANNULER - laisser Bukkit gérer les quantités
-                // Juste programmer une mise à jour après
-                plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                    updateCraftResult(gui);
-                }, 1L);
+                markDirty(uuid);
                 return;
             }
-            
-            // Slots de bordure/décoration - protégés
+
             event.setCancelled(true);
-            
-        } else {
-            // Clic dans l'inventaire du joueur - autoriser et mettre à jour
-            plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-                updateCraftResult(gui);
-            }, 1L);
-        }
-    }
-    
-    @EventHandler(priority = EventPriority.HIGH)
-    public void onInventoryDrag(InventoryDragEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
-        
-        Player player = (Player) event.getWhoClicked();
-        CraftTableGUI gui = activeGUIs.get(player.getUniqueId());
-        
+
+        /*
+         * Clic dans l'inventaire joueur :
+         * Bukkit peut déplacer un item vers la GUI via shift-click.
+         */
+        markDirty(uuid);
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onInventoryDrag(
+            InventoryDragEvent event) {
+
+        if (!(event.getWhoClicked()
+                instanceof Player)) {
+
+            return;
+        }
+
+        Player player =
+            (Player) event.getWhoClicked();
+
+        UUID uuid =
+            player.getUniqueId();
+
+        CraftTableGUI gui =
+            activeGUIs.get(uuid);
+
         if (gui == null) {
             return;
         }
-        
-        // Vérifier si le drag affecte des slots protégés
-        boolean hasProtectedSlot = false;
-        for (int slot : event.getRawSlots()) {
-            if (slot >= 0 && slot < gui.getInventory().getSize()) {
-                if (!gui.isModifiableSlot(slot)) {
-                    hasProtectedSlot = true;
-                    break;
-                }
+
+        for (int slot
+                : event.getRawSlots()) {
+
+            if (slot >= 0
+                    && slot < gui.getInventory()
+                        .getSize()
+                    && !gui.isModifiableSlot(slot)) {
+
+                event.setCancelled(true);
+                return;
             }
         }
-        
-        if (hasProtectedSlot) {
-            event.setCancelled(true);
+
+        markDirty(uuid);
+    }
+
+    @EventHandler
+    public void onInventoryClose(
+            InventoryCloseEvent event) {
+
+        if (!(event.getPlayer()
+                instanceof Player)) {
+
             return;
         }
-        
-        // Si autorisé, programmer une mise à jour
-        plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
-            updateCraftResult(gui);
-        }, 1L);
-    }
-    
-    @EventHandler
-    public void onInventoryClose(InventoryCloseEvent event) {
-        if (!(event.getPlayer() instanceof Player)) {
+
+        Player player =
+            (Player) event.getPlayer();
+
+        UUID uuid =
+            player.getUniqueId();
+
+        CraftTableGUI gui =
+            activeGUIs.get(uuid);
+
+        if (gui == null
+                || event.getInventory()
+                    != gui.getInventory()) {
+
             return;
         }
-        
-        Player player = (Player) event.getPlayer();
-        CraftTableGUI gui = activeGUIs.get(player.getUniqueId());
-        if (gui == null || event.getInventory() != gui.getInventory()) return;
 
-        cleanupPlayer(player.getUniqueId(), player, true);
-        MessageUtil.debug("GUI fermée pour " + player.getName(), 2);
+        cleanupPlayer(
+            uuid,
+            player,
+            true
+        );
     }
 
     @EventHandler
-    public void onPlayerKick(PlayerKickEvent event) {
-        cleanupPlayer(event.getPlayer().getUniqueId(), event.getPlayer(), true);
+    public void onPlayerKick(
+            PlayerKickEvent event) {
+
+        cleanupPlayer(
+            event.getPlayer().getUniqueId(),
+            event.getPlayer(),
+            true
+        );
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        cleanupPlayer(event.getPlayer().getUniqueId(), event.getPlayer(), true);
+    public void onPlayerQuit(
+            PlayerQuitEvent event) {
+
+        cleanupPlayer(
+            event.getPlayer().getUniqueId(),
+            event.getPlayer(),
+            true
+        );
     }
 
-    /** Nettoie toutes les sessions encore actives avant la désactivation. */
     public void shutdown() {
-        for (UUID playerId : activeGUIs.playerIds()) {
-            Player player = plugin.getServer().getPlayer(playerId);
-            cleanupPlayer(playerId, player, player != null);
+
+        if (dirtyTask != null) {
+            dirtyTask.cancel();
+            dirtyTask = null;
+        }
+
+        dirty.clear();
+        previewSelections.clear();
+
+        for (UUID uuid
+                : activeGUIs.playerIds()) {
+
+            Player player =
+                plugin.getServer()
+                    .getPlayer(uuid);
+
+            cleanupPlayer(
+                uuid,
+                player,
+                player != null
+            );
+
             if (player != null) {
                 try {
                     player.closeInventory();
-                } catch (RuntimeException error) {
-                    plugin.getLogger().warning("Impossible de fermer la GUI KCraft de "
-                        + player.getName() + ": " + error.getMessage());
+                } catch (RuntimeException ignored) {
+                    // Shutdown best-effort.
                 }
             }
         }
+
         activeGUIs.clear();
     }
 
-    private void cleanupPlayer(final UUID playerId, final Player player,
-                               final boolean returnIngredients) {
+    private void handleCraftClick(
+            Player player,
+            CraftTableGUI gui) {
+
+        UUID uuid =
+            player.getUniqueId();
+
         try {
-            activeGUIs.cleanup(playerId, new PlayerGuiRegistry.Cleanup<CraftTableGUI>() {
-                @Override
-                public void run(CraftTableGUI gui) {
-                    if (returnIngredients && player != null) returnIngredients(player, gui);
-                }
-            });
-        } catch (RuntimeException error) {
-            String name = player == null ? playerId.toString() : player.getName();
-            plugin.getLogger().warning("Erreur pendant le nettoyage de la GUI KCraft de "
-                + name + ": " + error.getMessage());
-        }
-    }
+            ItemStack[] matrix =
+                gui.getCraftMatrix();
 
-    private void returnIngredients(Player player, CraftTableGUI gui) {
-        ItemStack[] matrix = gui.getCraftMatrix();
-        int[] craftSlots = gui.getCraftSlots();
-        for (int index = 0; index < matrix.length; index++) {
-            ItemStack item = matrix[index];
-            if (item == null || item.getType() == org.bukkit.Material.AIR || item.getAmount() <= 0) continue;
+            CraftRecipe recipe =
+                plugin.getCraftManager()
+                    .findMatchingRecipe(
+                        matrix,
+                        gui.getTable()
+                    );
 
-            boolean returned = false;
-            try {
-                HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(item.clone());
-                for (ItemStack drop : leftover.values()) {
-                    player.getWorld().dropItemNaturally(player.getLocation(), drop);
-                }
-                returned = true;
-            } catch (RuntimeException error) {
-                plugin.getLogger().warning("Impossible de restituer un ingrédient KCraft à "
-                    + player.getName() + ": " + error.getMessage());
-            } finally {
-                if (returned && index < craftSlots.length) {
-                    gui.getInventory().setItem(craftSlots[index], null);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Gère le clic sur le bouton de craft
-     */
-    private void handleCraftClick(Player player, CraftTableGUI gui) {
-        try {
-            ItemStack[] matrix = gui.getCraftMatrix();
-            
-            // Trouver une recette correspondante
-            CraftRecipe recipe = plugin.getCraftManager().findMatchingRecipe(matrix, gui.getTable());
-            
-            if (recipe == null) {
-                MessageUtil.sendError(player, "craft.no-recipe");
-                return;
-            }
-            
-            // Vérifier les permissions et conditions
-            if (!recipe.canCraft(player)) {
-                MessageUtil.sendError(player, "craft.no-permission");
-                return;
-            }
-            
-            // Vérifier les hooks nécessaires
-            if (!plugin.getHookManager().isPluginAvailable(recipe.getRequiredPlugin())) {
-                MessageUtil.sendError(player, "craft.plugin-required");
+            if (!checkAccess(
+                    player,
+                    recipe)) {
+
+                clearPreview(uuid);
+                markDirty(uuid);
                 return;
             }
 
-            // Vérifier le niveau de faction requis
-            if (!plugin.getHookManager().checkFactionLevel(player, recipe.getFactionLevelRequired())) {
-                MessageUtil.sendError(player, "craft.faction-level-low",
-                    MessageUtil.placeholders("level", String.valueOf(recipe.getFactionLevelRequired())));
-                return;
-            }
-            
-            ItemStack[] consumedMatrix = CraftMatrixTransaction.consumeOnce(recipe, matrix);
-            if (consumedMatrix == null) {
-                MessageUtil.sendError(player, "craft.failed");
-                updateCraftResult(gui);
+            ItemStack[] consumed =
+                CraftMatrixTransaction.consumeOnce(
+                    recipe,
+                    matrix
+                );
+
+            if (consumed == null) {
+                MessageUtil.sendError(
+                    player,
+                    "craft.failed"
+                );
+
+                markDirty(uuid);
                 return;
             }
 
-            CraftResult selectedResult = recipe.shouldGiveResult() ? recipe.getResult() : null;
-            if (recipe.shouldGiveResult() && selectedResult == null) {
-                MessageUtil.sendError(player, "craft.failed");
-                updateCraftResult(gui);
+            CraftResult result =
+                resolveLockedResult(
+                    uuid,
+                    recipe
+                );
+
+            if (recipe.shouldGiveResult()
+                    && result == null) {
+
+                MessageUtil.sendError(
+                    player,
+                    "craft.failed"
+                );
+
+                clearPreview(uuid);
+                markDirty(uuid);
                 return;
             }
 
-            KcraftPreCraftEvent preEvent = new KcraftPreCraftEvent(player, recipe, false);
-            plugin.getServer().getPluginManager().callEvent(preEvent);
-            if (preEvent.isCancelled()) {
-                updateCraftResult(gui);
+            if (!callPreEvent(
+                    player,
+                    recipe)) {
+
+                /*
+                 * Le craft n'a pas eu lieu :
+                 * on conserve la preview verrouillée.
+                 */
+                markDirty(uuid);
                 return;
             }
 
-            boolean success = plugin.getCraftManager()
-                    .executeCraft(player, recipe, matrix, selectedResult);
-            
+            UUID transactionId =
+                UUID.randomUUID();
+
+            boolean success;
+
+            try (CraftExecutionContext.Scope ignored =
+                    CraftExecutionContext.enter(
+                        CraftExecutionSource.CUSTOM_GUI_SINGLE,
+                        transactionId,
+                        -1,
+                        1)) {
+
+                success =
+                    plugin.getCraftManager()
+                        .executeCraft(
+                            player,
+                            recipe,
+                            matrix,
+                            result
+                        );
+            }
+
+            /*
+             * Une vraie tentative a eu lieu.
+             * La prochaine preview doit être une nouvelle sélection.
+             */
+            consumePreview(uuid);
+
             if (success) {
-                applyMatrix(gui, consumedMatrix);
-                
-                // Donner le résultat (sauf si consume-result: false)
-                if (selectedResult != null) giveResult(player, selectedResult.createItem());
-                
-                // Messages et sons
-                MessageUtil.sendSuccess(player, "craft.success", 
-                    MessageUtil.placeholders("item", recipe.getId()));
-                
-                // Son de succes (fallback sur soundOpen si pas de son dedie a la recette)
-                if (plugin.getConfigManager().areSoundsEnabled() && gui.getTable().getSoundOpen() != null) {
-                    me.krunsh.kcraft.utils.SoundUtil.playSafe(player, gui.getTable().getSoundOpen(), 1.0f, 1.4f);
+                applyMatrix(
+                    gui,
+                    consumed
+                );
+
+                if (result != null) {
+                    giveResult(
+                        player,
+                        result.createItem()
+                    );
                 }
-                
-                // Mettre à jour l'affichage
-                updateCraftResult(gui);
-                
-            } else {
-                // Si la config indique que les items sont perdus en cas d'échec,
-                // on consomme les ingrédients même lorsque le craft rate.
-                if (!recipe.isReturnItemsOnFail()) {
-                    applyMatrix(gui, consumedMatrix);
-                    updateCraftResult(gui);
-                }
-                MessageUtil.sendError(player, "craft.failed");
+
+                MessageUtil.sendSuccess(
+                    player,
+                    "craft.success",
+                    MessageUtil.placeholders(
+                        "item",
+                        recipe.getId()
+                    )
+                );
+
+                playSuccessSound(
+                    player,
+                    gui
+                );
+
+                markDirty(uuid);
+                return;
             }
-            
-        } catch (Exception e) {
-            plugin.getLogger().warning("Erreur lors du craft par " + player.getName() + ": " + e.getMessage());
-            MessageUtil.sendError(player, "craft.error");
+
+            if (!recipe.isReturnItemsOnFail()) {
+                applyMatrix(
+                    gui,
+                    consumed
+                );
+            }
+
+            markDirty(uuid);
+
+            MessageUtil.sendError(
+                player,
+                "craft.failed"
+            );
+
+        } catch (Exception error) {
+            plugin.getLogger().warning(
+                "Erreur craft "
+                    + player.getName()
+                    + ": "
+                    + error.getMessage()
+            );
+
+            clearPreview(uuid);
+            markDirty(uuid);
+
+            MessageUtil.sendError(
+                player,
+                "craft.error"
+            );
         }
     }
-    
-    /**
-     * Gère le craft en masse (shift+clic)
-     */
-    private void handleMassCraft(Player player, CraftTableGUI gui) {
+
+    private void handleMassCraft(
+            Player player,
+            CraftTableGUI gui) {
+
+        UUID uuid =
+            player.getUniqueId();
+
         try {
-            ItemStack[] matrix = gui.getCraftMatrix();
-            
-            // Trouver une recette correspondante
-            CraftRecipe recipe = plugin.getCraftManager().findMatchingRecipe(matrix, gui.getTable());
-            
-            if (recipe == null) {
-                MessageUtil.sendError(player, "craft.no-recipe");
-                return;
-            }
-            
-            // Vérifier les permissions et conditions
-            if (!recipe.canCraft(player)) {
-                MessageUtil.sendError(player, "craft.no-permission");
+            if (!plugin.getConfigManager()
+                    .isBatchCraftEnabled()) {
+
+                handleCraftClick(
+                    player,
+                    gui
+                );
                 return;
             }
 
-            if (!plugin.getHookManager().isPluginAvailable(recipe.getRequiredPlugin())) {
-                MessageUtil.sendError(player, "craft.plugin-required");
-                return;
-            }
-            
-            // Vérifier le niveau de faction requis
-            if (!plugin.getHookManager().checkFactionLevel(player, recipe.getFactionLevelRequired())) {
-                MessageUtil.sendError(player, "craft.faction-level-low",
-                    MessageUtil.placeholders("level", String.valueOf(recipe.getFactionLevelRequired())));
+            ItemStack[] initialMatrix =
+                gui.getCraftMatrix();
+
+            CraftRecipe recipe =
+                plugin.getCraftManager()
+                    .findMatchingRecipe(
+                        initialMatrix,
+                        gui.getTable()
+                    );
+
+            if (!checkAccess(
+                    player,
+                    recipe)) {
+
+                clearPreview(uuid);
+                markDirty(uuid);
                 return;
             }
 
-            // Limiter selon la config
-            int maxCrafts = plugin.getConfigManager().getConfig().getInt("Kcraft.optimizations.batch-craft.max-batch", 64);
-            if (maxCrafts <= 0) {
-                maxCrafts = 64;
+            CompiledRecipe compiled =
+                plugin.getCompiledRecipeCatalog()
+                    .get(recipe.getId());
+
+            if (compiled == null) {
+                handleCraftClick(
+                    player,
+                    gui
+                );
+                return;
             }
-            
-            int successfulCrafts = 0;
-            
-            // Boucle de craft
-            for (int i = 0; i < maxCrafts; i++) {
-                // Revalider la recette à chaque itération pour éviter tout exploit
-                // quand la grille change après consommation.
-                ItemStack[] currentMatrix = gui.getCraftMatrix();
-                CraftRecipe currentRecipe = plugin.getCraftManager().findMatchingRecipe(currentMatrix, gui.getTable());
-                if (currentRecipe == null || !currentRecipe.getId().equals(recipe.getId())) {
+
+            long planStarted =
+                System.nanoTime();
+
+            CraftBatchPlan plan =
+                batchPlanner.plan(
+                    recipe,
+                    compiled,
+                    initialMatrix,
+                    plugin.getConfigManager()
+                        .getMaxBatchCrafts()
+                );
+
+            long planNanos =
+                System.nanoTime()
+                    - planStarted;
+
+            if (plan == null
+                    || plan.getCraftCount() <= 0) {
+
+                batchMetrics.recordPlan(
+                    0,
+                    planNanos
+                );
+
+                MessageUtil.sendError(
+                    player,
+                    "craft.mass-failed"
+                );
+
+                markDirty(uuid);
+                return;
+            }
+
+            batchMetrics.recordPlan(
+                plan.getCraftCount(),
+                planNanos
+            );
+
+            int successful = 0;
+            int attempted = 0;
+            int failed = 0;
+            boolean cancelled = false;
+            boolean matrixChanged = false;
+
+            UUID transactionId =
+                UUID.randomUUID();
+
+            CraftBatchAccumulator resultAccumulator =
+                new CraftBatchAccumulator();
+
+            /*
+             * Le premier craft utilise exactement la preview affichée.
+             * Les suivants tirent normalement un nouveau résultat par craft.
+             */
+            CraftResult firstLockedResult =
+                resolveLockedResult(
+                    uuid,
+                    recipe
+                );
+
+            boolean firstResultAvailable =
+                !recipe.shouldGiveResult()
+                    || firstLockedResult != null;
+
+            if (!firstResultAvailable) {
+                clearPreview(uuid);
+                markDirty(uuid);
+
+                MessageUtil.sendError(
+                    player,
+                    "craft.mass-failed"
+                );
+                return;
+            }
+
+            for (int craftIndex = 0;
+                    craftIndex < plan.getCraftCount();
+                    craftIndex++) {
+
+                CraftResult result =
+                    craftIndex == 0
+                        ? firstLockedResult
+                        : selectFreshResult(recipe);
+
+                if (recipe.shouldGiveResult()
+                        && result == null) {
+
+                    batchMetrics.recordFailed();
+                    failed++;
                     break;
                 }
 
-                if (!plugin.getHookManager().isPluginAvailable(currentRecipe.getRequiredPlugin())) {
+                if (!callPreEvent(
+                        player,
+                        recipe)) {
+
+                    batchMetrics.recordCancelled();
+                    cancelled = true;
                     break;
                 }
 
-                if (!plugin.getHookManager().checkFactionLevel(player, currentRecipe.getFactionLevelRequired())) {
-                    break;
+                attempted++;
+
+                ItemStack[] beforeConsumption =
+                    plan.getWorkingMatrix();
+
+                boolean success;
+
+                try (CraftExecutionContext.Scope ignored =
+                        CraftExecutionContext.enter(
+                            CraftExecutionSource.SHIFT_BATCH,
+                            transactionId,
+                            craftIndex,
+                            plan.getCraftCount())) {
+
+                    success =
+                        plugin.getCraftManager()
+                            .executeCraft(
+                                player,
+                                recipe,
+                                beforeConsumption,
+                                result
+                            );
                 }
 
-                if (!currentRecipe.canCraft(player)) break;
+                /*
+                 * Dès la première vraie tentative le preview lock est consommé.
+                 */
+                if (craftIndex == 0) {
+                    consumePreview(uuid);
+                }
 
-                ItemStack[] consumedMatrix = CraftMatrixTransaction.consumeOnce(currentRecipe, currentMatrix);
-                if (consumedMatrix == null) break;
-                CraftResult selectedResult = currentRecipe.shouldGiveResult()
-                        ? currentRecipe.getResult() : null;
-                if (currentRecipe.shouldGiveResult() && selectedResult == null) break;
-
-                KcraftPreCraftEvent preEvent = new KcraftPreCraftEvent(player, currentRecipe, false);
-                plugin.getServer().getPluginManager().callEvent(preEvent);
-                if (preEvent.isCancelled()) break;
-                
-                // Exécuter un craft
-                boolean success = plugin.getCraftManager()
-                        .executeCraft(player, currentRecipe, currentMatrix, selectedResult);
-                
                 if (success) {
-                    applyMatrix(gui, consumedMatrix);
-                    
-                    // Donner le résultat (sauf si consume-result: false)
-                    if (selectedResult != null) giveResult(player, selectedResult.createItem());
-                    
-                    successfulCrafts++;
-                } else {
-                    if (!currentRecipe.isReturnItemsOnFail()) {
-                        applyMatrix(gui, consumedMatrix);
+                    if (!plan.applyConsumption(
+                            craftIndex)) {
+
+                        plugin.getLogger().warning(
+                            "CraftBatchPlan incoherent pour "
+                                + recipe.getId()
+                                + " / "
+                                + player.getName()
+                        );
+
+                        batchMetrics.recordFailed();
+                        break;
                     }
-                    break; // Arrêter sur premier échec
+
+                    matrixChanged = true;
+                    successful++;
+
+                    batchMetrics.recordExecuted();
+
+                    ItemStack resultItem =
+                        result == null
+                            ? null
+                            : result.createItem();
+
+                    resultAccumulator.addSuccess(
+                        resultItem
+                    );
+
+                    if (resultItem != null) {
+                        giveResult(
+                            player,
+                            resultItem
+                        );
+                    }
+
+                    continue;
                 }
+
+                batchMetrics.recordFailed();
+                failed++;
+
+                if (!recipe.isReturnItemsOnFail()) {
+                    if (plan.applyConsumption(
+                            craftIndex)) {
+
+                        matrixChanged = true;
+                    }
+                }
+
+                break;
             }
-            
-            // Message de résultat
-            if (successfulCrafts > 0) {
-                MessageUtil.sendSuccess(player, "craft.mass-success", 
-                    MessageUtil.placeholders("amount", String.valueOf(successfulCrafts), "item", recipe.getId()));
-                    
-                // Mettre à jour l'affichage
-                updateCraftResult(gui);
+
+            if (matrixChanged) {
+                applyMatrix(
+                    gui,
+                    plan.getWorkingMatrix()
+                );
+            }
+
+            if (successful > 0) {
+                MessageUtil.sendSuccess(
+                    player,
+                    "craft.mass-success",
+                    MessageUtil.placeholders(
+                        "amount",
+                        String.valueOf(successful),
+                        "item",
+                        recipe.getId()
+                    )
+                );
+
+                playSuccessSound(
+                    player,
+                    gui
+                );
+
             } else {
-                MessageUtil.sendError(player, "craft.mass-failed");
+                MessageUtil.sendError(
+                    player,
+                    "craft.mass-failed"
+                );
             }
-            
-        } catch (Exception e) {
-            plugin.getLogger().warning("Erreur lors du craft en masse par " + player.getName() + ": " + e.getMessage());
-            MessageUtil.sendError(player, "craft.error");
+
+            KcraftBatchCraftEvent batchEvent =
+                new KcraftBatchCraftEvent(
+                    player,
+                    recipe,
+                    transactionId,
+                    CraftExecutionSource.SHIFT_BATCH,
+                    plan.getCraftCount(),
+                    attempted,
+                    successful,
+                    failed,
+                    resultAccumulator.getTotalResultItems(),
+                    cancelled,
+                    resultAccumulator.snapshot()
+                );
+
+            plugin.getServer()
+                .getPluginManager()
+                .callEvent(batchEvent);
+
+            markDirty(uuid);
+
+        } catch (Exception error) {
+            plugin.getLogger().warning(
+                "Erreur mass craft "
+                    + player.getName()
+                    + ": "
+                    + error.getMessage()
+            );
+
+            clearPreview(uuid);
+            markDirty(uuid);
+
+            MessageUtil.sendError(
+                player,
+                "craft.error"
+            );
         }
     }
 
-    private void applyMatrix(CraftTableGUI gui, ItemStack[] matrix) {
-        int[] slots = gui.getCraftSlots();
-        for (int i = 0; i < slots.length && i < matrix.length; i++) {
-            gui.getInventory().setItem(slots[i], matrix[i]);
+    private boolean checkAccess(
+            Player player,
+            CraftRecipe recipe) {
+
+        if (recipe == null) {
+            MessageUtil.sendError(
+                player,
+                "craft.no-recipe"
+            );
+            return false;
+        }
+
+        if (!recipe.canCraft(player)) {
+            MessageUtil.sendError(
+                player,
+                "craft.no-permission"
+            );
+            return false;
+        }
+
+        if (!plugin.getHookManager()
+                .isPluginAvailable(
+                    recipe.getRequiredPlugin())) {
+
+            MessageUtil.sendError(
+                player,
+                "craft.plugin-required"
+            );
+            return false;
+        }
+
+        if (!plugin.getHookManager()
+                .checkFactionLevel(
+                    player,
+                    recipe.getFactionLevelRequired())) {
+
+            MessageUtil.sendError(
+                player,
+                "craft.faction-level-low",
+                MessageUtil.placeholders(
+                    "level",
+                    String.valueOf(
+                        recipe.getFactionLevelRequired()
+                    )
+                )
+            );
+            return false;
+        }
+
+        return true;
+    }
+
+    private CraftResult resolveLockedResult(
+            UUID uuid,
+            CraftRecipe recipe) {
+
+        PreviewSelection selection =
+            previewSelections.get(uuid);
+
+        if (selection != null
+                && selection.matches(recipe)) {
+
+            guiMetrics.recordPreviewReused();
+
+            return selection.getResult();
+        }
+
+        CraftResult fresh =
+            selectFreshResult(recipe);
+
+        previewSelections.put(
+            uuid,
+            new PreviewSelection(
+                recipe.getId(),
+                fresh
+            )
+        );
+
+        guiMetrics.recordPreviewCreated();
+
+        return fresh;
+    }
+
+    private CraftResult selectFreshResult(
+            CraftRecipe recipe) {
+
+        return recipe.shouldGiveResult()
+            ? recipe.getResult()
+            : null;
+    }
+
+    private void consumePreview(
+            UUID uuid) {
+
+        if (previewSelections.remove(uuid)
+                != null) {
+
+            guiMetrics.recordPreviewConsumed();
         }
     }
 
-    private void giveResult(Player player, ItemStack result) {
-        if (result == null || result.getType() == org.bukkit.Material.AIR) return;
-        HashMap<Integer, ItemStack> leftover = player.getInventory().addItem(result);
-        for (ItemStack item : leftover.values()) {
-            player.getWorld().dropItemNaturally(player.getLocation(), item);
-        }
+    private void clearPreview(
+            UUID uuid) {
+
+        previewSelections.remove(uuid);
     }
-    
+
+    private boolean callPreEvent(
+            Player player,
+            CraftRecipe recipe) {
+
+        KcraftPreCraftEvent event =
+            new KcraftPreCraftEvent(
+                player,
+                recipe,
+                false
+            );
+
+        plugin.getServer()
+            .getPluginManager()
+            .callEvent(event);
+
+        return !event.isCancelled();
+    }
+
     /**
-     * Consomme les ingrédients après un craft réussi
+     * Marque une GUI dirty.
+     *
+     * Une seule tâche Bukkit est planifiée, quelle que soit la quantité de
+     * marks avant le prochain tick.
      */
-    private void consumeIngredients(CraftTableGUI gui, CraftRecipe recipe) {
-        if (recipe.getType() == CraftType.SHAPELESS) {
-            consumeShapeless(gui, recipe);
+    private void markDirty(
+            UUID uuid) {
+
+        boolean first =
+            dirty.mark(uuid);
+
+        guiMetrics.recordMark(first);
+
+        if (dirtyTask != null) {
             return;
         }
 
-        consumeShaped(gui, recipe);
+        dirtyTask =
+            plugin.getServer()
+                .getScheduler()
+                .runTask(
+                    plugin,
+                    new Runnable() {
+                        @Override
+                        public void run() {
+                            flushDirty();
+                        }
+                    }
+                );
     }
 
-    private void consumeShaped(CraftTableGUI gui, CraftRecipe recipe) {
-        ItemStack[] matrix = gui.getCraftMatrix();
-        List<String> pattern = recipe.getPattern();
+    private void flushDirty() {
 
-        if (pattern == null || pattern.isEmpty()) {
+        dirtyTask = null;
+
+        List<UUID> players =
+            dirty.drain();
+
+        if (players.isEmpty()) {
             return;
         }
 
-        int tableSize = (int) Math.sqrt(matrix.length);
-        int patternRows = pattern.size();
-        int patternCols = pattern.get(0).length();
+        guiMetrics.recordDrain();
 
-        int[] origin = findPatternOrigin(matrix, pattern, recipe.getIngredients(), tableSize, patternRows, patternCols);
-        if (origin == null) {
-            return;
-        }
+        for (UUID uuid : players) {
 
-        int startRow = origin[0];
-        int startCol = origin[1];
+            CraftTableGUI gui =
+                activeGUIs.get(uuid);
 
-        for (int row = 0; row < patternRows; row++) {
-            String patternRow = pattern.get(row);
-            for (int col = 0; col < patternCols; col++) {
-                char symbol = patternRow.charAt(col);
-                if (symbol == ' ') {
-                    continue;
-                }
-
-                CraftIngredient ingredient = recipe.getIngredients().get(symbol);
-                if (ingredient == null) {
-                    continue;
-                }
-
-                int matrixIndex = (startRow + row) * tableSize + (startCol + col);
-                if (matrixIndex < 0 || matrixIndex >= matrix.length) {
-                    continue;
-                }
-
-                ItemStack item = matrix[matrixIndex];
-                if (item == null) {
-                    continue;
-                }
-
-                int newAmount = item.getAmount() - ingredient.getAmount();
-                if (newAmount <= 0) {
-                    gui.getInventory().setItem(gui.getCraftSlots()[matrixIndex], null);
-                } else {
-                    item.setAmount(newAmount);
-                    gui.getInventory().setItem(gui.getCraftSlots()[matrixIndex], item);
-                }
-            }
-        }
-    }
-
-    private void consumeShapeless(CraftTableGUI gui, CraftRecipe recipe) {
-        ItemStack[] matrix = gui.getCraftMatrix();
-        List<CraftIngredient> remaining = new ArrayList<>(recipe.getShapelessIngredients());
-
-        for (int i = 0; i < matrix.length && !remaining.isEmpty(); i++) {
-            ItemStack item = matrix[i];
-            if (item == null || item.getType() == org.bukkit.Material.AIR) {
+            if (gui == null) {
+                guiMetrics.recordStaleSkipped();
                 continue;
             }
 
-            for (int j = 0; j < remaining.size(); j++) {
-                CraftIngredient ingredient = remaining.get(j);
-                if (ingredient.matches(item)) {
-                    int newAmount = item.getAmount() - ingredient.getAmount();
-                    if (newAmount <= 0) {
-                        gui.getInventory().setItem(gui.getCraftSlots()[i], null);
-                    } else {
-                        item.setAmount(newAmount);
-                        gui.getInventory().setItem(gui.getCraftSlots()[i], item);
-                    }
-                    remaining.remove(j);
-                    break;
-                }
+            Player player =
+                plugin.getServer()
+                    .getPlayer(uuid);
+
+            if (player == null
+                    || !player.isOnline()) {
+
+                guiMetrics.recordStaleSkipped();
+                continue;
             }
+
+            updateCraftResult(
+                uuid,
+                gui
+            );
+
+            guiMetrics.recordRefreshed();
+        }
+
+        /*
+         * Un listener déclenché pendant le flush peut re-marquer une GUI.
+         * On programme alors un prochain drain, jamais une boucle immédiate.
+         */
+        if (!dirty.isEmpty()
+                && dirtyTask == null) {
+
+            dirtyTask =
+                plugin.getServer()
+                    .getScheduler()
+                    .runTask(
+                        plugin,
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                flushDirty();
+                            }
+                        }
+                    );
         }
     }
 
-    private int[] findPatternOrigin(ItemStack[] matrix, List<String> pattern, Map<Character, CraftIngredient> ingredients,
-                                    int tableSize, int patternRows, int patternCols) {
-        for (int startRow = 0; startRow <= tableSize - patternRows; startRow++) {
-            for (int startCol = 0; startCol <= tableSize - patternCols; startCol++) {
-                if (matchesPatternAtOrigin(matrix, pattern, ingredients, startRow, startCol, tableSize) &&
-                    areOtherSlotsEmpty(matrix, pattern, startRow, startCol, tableSize)) {
-                    return new int[]{startRow, startCol};
-                }
-            }
-        }
-        return null;
-    }
+    private void updateCraftResult(
+            UUID uuid,
+            CraftTableGUI gui) {
 
-    private boolean matchesPatternAtOrigin(ItemStack[] matrix, List<String> pattern, Map<Character, CraftIngredient> ingredients,
-                                           int startRow, int startCol, int tableSize) {
-        for (int row = 0; row < pattern.size(); row++) {
-            String patternRow = pattern.get(row);
-            for (int col = 0; col < patternRow.length(); col++) {
-                char symbol = patternRow.charAt(col);
-                int matrixIndex = (startRow + row) * tableSize + (startCol + col);
-                if (matrixIndex >= matrix.length) {
-                    return false;
-                }
-
-                ItemStack item = matrix[matrixIndex];
-                if (symbol == ' ') {
-                    if (item != null && item.getType() != org.bukkit.Material.AIR) {
-                        return false;
-                    }
-                    continue;
-                }
-
-                CraftIngredient ingredient = ingredients.get(symbol);
-                if (ingredient == null || item == null || !ingredient.matches(item)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private boolean areOtherSlotsEmpty(ItemStack[] matrix, List<String> pattern,
-                                       int startRow, int startCol, int tableSize) {
-        for (int row = 0; row < tableSize; row++) {
-            for (int col = 0; col < tableSize; col++) {
-                int matrixIndex = row * tableSize + col;
-
-                boolean isInPattern = row >= startRow && row < startRow + pattern.size() &&
-                                      col >= startCol && col < startCol + pattern.get(0).length();
-
-                if (!isInPattern) {
-                    ItemStack item = matrix[matrixIndex];
-                    if (item != null && item.getType() != org.bukkit.Material.AIR) {
-                        return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-    
-    /**
-     * Met à jour le résultat affiché
-     */
-    private void updateCraftResult(CraftTableGUI gui) {
         try {
-            ItemStack[] matrix = gui.getCraftMatrix();
-            
-            // D'abord chercher dans les crafts custom
-            CraftRecipe customRecipe = plugin.getCraftManager().findMatchingRecipe(matrix, gui.getTable());
-            
-            if (customRecipe != null) {
-                Player player = gui.getPlayer();
+            ItemStack[] matrix =
+                gui.getCraftMatrix();
 
-                if (player == null || !player.isOnline()) {
-                    gui.updateResult(null);
-                    return;
-                }
+            CraftRecipe recipe =
+                plugin.getCraftManager()
+                    .findMatchingRecipe(
+                        matrix,
+                        gui.getTable()
+                    );
 
-                if (!customRecipe.canCraft(player) ||
-                    !plugin.getHookManager().isPluginAvailable(customRecipe.getRequiredPlugin()) ||
-                    !plugin.getHookManager().checkFactionLevel(player, customRecipe.getFactionLevelRequired())) {
-                    gui.updateResult(null);
-                    return;
-                }
-
-                CraftResult previewResult = customRecipe.shouldGiveResult()
-                        ? customRecipe.getResult() : null;
-                gui.updateResult(previewResult == null ? null : previewResult.createItem());
+            if (recipe == null) {
+                clearPreview(uuid);
+                gui.updateResult(null);
                 return;
             }
-            
-            // Si pas de craft custom, chercher dans les crafts vanilla
-            ItemStack vanillaResult = findVanillaCraftResult(matrix);
-            if (vanillaResult != null) {
-                gui.updateResult(vanillaResult);
+
+            Player player =
+                plugin.getServer()
+                    .getPlayer(uuid);
+
+            if (player == null
+                    || !player.isOnline()
+                    || !recipe.canCraft(player)
+                    || !plugin.getHookManager()
+                        .isPluginAvailable(
+                            recipe.getRequiredPlugin())
+                    || !plugin.getHookManager()
+                        .checkFactionLevel(
+                            player,
+                            recipe.getFactionLevelRequired())) {
+
+                clearPreview(uuid);
+                gui.updateResult(null);
                 return;
             }
-            
-            // Aucun résultat
-            gui.updateResult(null);
-            
-        } catch (Exception e) {
-            plugin.getLogger().warning("Erreur lors de la mise à jour du résultat: " + e.getMessage());
+
+            CraftResult preview =
+                resolveLockedResult(
+                    uuid,
+                    recipe
+                );
+
+            gui.updateResult(
+                preview == null
+                    ? null
+                    : preview.createItem()
+            );
+
+        } catch (Exception error) {
+            clearPreview(uuid);
+
+            plugin.getLogger().warning(
+                "Erreur preview KCraft: "
+                    + error.getMessage()
+            );
         }
     }
-    
-    /**
-     * Trouve le résultat d'un craft vanilla (simulation)
-     * Note: En 1.8.8, on ne peut pas accéder facilement aux recettes vanilla
-     * Cette méthode peut être étendue pour supporter les crafts les plus courants
-     */
-    private ItemStack findVanillaCraftResult(ItemStack[] matrix) {
-        // Pour l'instant, retourner null
-        // TODO: Implémenter détection des crafts vanilla communs si nécessaire
-        // Par exemple: planches, sticks, torches, etc.
-        
-        return null;
+
+    private void applyMatrix(
+            CraftTableGUI gui,
+            ItemStack[] matrix) {
+
+        int[] slots =
+            gui.getCraftSlots();
+
+        for (int index = 0;
+                index < slots.length
+                    && index < matrix.length;
+                index++) {
+
+            gui.getInventory()
+                .setItem(
+                    slots[index],
+                    matrix[index]
+                );
+        }
+    }
+
+    private void giveResult(
+            Player player,
+            ItemStack result) {
+
+        if (result == null
+                || result.getType() == Material.AIR) {
+
+            return;
+        }
+
+        HashMap<Integer, ItemStack> leftover =
+            player.getInventory()
+                .addItem(result);
+
+        for (ItemStack item
+                : leftover.values()) {
+
+            player.getWorld()
+                .dropItemNaturally(
+                    player.getLocation(),
+                    item
+                );
+        }
+    }
+
+    private void playSuccessSound(
+            Player player,
+            CraftTableGUI gui) {
+
+        if (plugin.getConfigManager()
+                .areSoundsEnabled()
+                && gui.getTable()
+                    .getSoundOpen() != null) {
+
+            SoundUtil.playSafe(
+                player,
+                gui.getTable().getSoundOpen(),
+                1.0F,
+                1.4F
+            );
+        }
+    }
+
+    private void cleanupPlayer(
+            final UUID uuid,
+            final Player player,
+            final boolean returnIngredients) {
+
+        dirty.remove(uuid);
+        clearPreview(uuid);
+
+        activeGUIs.cleanup(
+            uuid,
+            new PlayerGuiRegistry.Cleanup<CraftTableGUI>() {
+                @Override
+                public void run(
+                        CraftTableGUI gui) {
+
+                    if (returnIngredients
+                            && player != null) {
+
+                        returnIngredients(
+                            player,
+                            gui
+                        );
+                    }
+                }
+            }
+        );
+    }
+
+    private void returnIngredients(
+            Player player,
+            CraftTableGUI gui) {
+
+        ItemStack[] matrix =
+            gui.getCraftMatrix();
+
+        int[] slots =
+            gui.getCraftSlots();
+
+        for (int index = 0;
+                index < matrix.length;
+                index++) {
+
+            ItemStack item =
+                matrix[index];
+
+            if (item == null
+                    || item.getType() == Material.AIR
+                    || item.getAmount() <= 0) {
+
+                continue;
+            }
+
+            HashMap<Integer, ItemStack> leftover =
+                player.getInventory()
+                    .addItem(
+                        item.clone()
+                    );
+
+            for (ItemStack drop
+                    : leftover.values()) {
+
+                player.getWorld()
+                    .dropItemNaturally(
+                        player.getLocation(),
+                        drop
+                    );
+            }
+
+            if (index < slots.length) {
+                gui.getInventory()
+                    .setItem(
+                        slots[index],
+                        null
+                    );
+            }
+        }
+    }
+
+    public CraftBatchMetrics getBatchMetrics() {
+        return batchMetrics;
+    }
+
+    public GuiRefreshMetrics getGuiRefreshMetrics() {
+        return guiMetrics;
+    }
+
+    public int getDirtyGuiCount() {
+        return dirty.size();
+    }
+
+    public int getPreviewLockCount() {
+        return previewSelections.size();
     }
 }
 
-/** Registre des GUI actives indexé exclusivement par UUID. */
+/** Registre GUI UUID-only. */
 final class PlayerGuiRegistry<T> {
+
     interface Cleanup<T> {
         void run(T value);
     }
 
-    private final Map<UUID, T> values = new HashMap<UUID, T>();
+    private final Map<UUID, T> values =
+        new HashMap<UUID, T>();
 
-    T put(UUID playerId, T value) {
-        if (playerId == null || value == null) throw new IllegalArgumentException("playerId/value");
-        return values.put(playerId, value);
-    }
+    T put(
+            UUID uuid,
+            T value) {
 
-    T get(UUID playerId) {
-        return values.get(playerId);
-    }
+        if (uuid == null
+                || value == null) {
 
-    void cleanup(UUID playerId, Cleanup<T> cleanup) {
-        T value = values.remove(playerId);
-        if (value == null) return;
-        try {
-            cleanup.run(value);
-        } finally {
-            // Ne supprime jamais une nouvelle session créée pendant le nettoyage.
-            if (values.get(playerId) == value) values.remove(playerId);
+            throw new IllegalArgumentException(
+                "uuid/value"
+            );
         }
+
+        return values.put(
+            uuid,
+            value
+        );
+    }
+
+    T get(UUID uuid) {
+        return values.get(uuid);
+    }
+
+    void cleanup(
+            UUID uuid,
+            Cleanup<T> cleanup) {
+
+        T value =
+            values.remove(uuid);
+
+        if (value == null) {
+            return;
+        }
+
+        cleanup.run(value);
     }
 
     List<UUID> playerIds() {
-        return new ArrayList<UUID>(values.keySet());
+        return new ArrayList<UUID>(
+            values.keySet()
+        );
     }
 
     int size() {

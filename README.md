@@ -3,7 +3,8 @@
 Plugin de craft custom pour serveur Minecraft 1.8.8, base YAML, avec gestion NBT (`sparrowmc-item`) et integration plugins externes.
 
 ## Etat actuel
-- Build Maven valide (`mvn clean package -DskipTests`)
+
+- Version `2.8.2`, build Maven sous Java 8 avec tests (`mvn verify`)
 - Moteur de craft actif en SHAPED + SHAPELESS
 - `success-rate` applique en runtime
 - Gestion `on-success` / `on-fail` active
@@ -68,7 +69,9 @@ collector_expert:
 ```
 
 ## Documentation du depot
-- `docs/README.md`: index principal de la documentation
+
+- [Index de la documentation](docs/README.md)
+- [Build Java 8](docs/BUILD.md): prerequis, PowerShell, dependances et integration continue
 - `docs/audit/`: audits techniques, plans et remediations
 - `docs/guides/`: guides d'utilisation et de configuration
 - `docs/handoff/`: contexte de transmission pour reprise rapide
@@ -77,13 +80,19 @@ collector_expert:
 - `docs/archive/`: anciennes notes conservees pour historique
 
 ## Build
+
+Utiliser un JDK Java 8 et Maven 3.9.9. Voir le [guide de compilation](docs/BUILD.md)
+pour selectionner Java 8 temporairement dans PowerShell.
+
 ```bash
-mvn clean package -DskipTests
+mvn --batch-mode --no-transfer-progress verify
 ```
 
 Jar genere:
-- `target/Kcraft-1.0.0.jar`
+
+- `target/Kcraft-2.8.2.jar`
 
 ## Notes
-- Le projet compile, mais garde des warnings Maven non bloquants lies aux dependances `systemPath`.
+
+- La compilation telecharge les dependances depuis les depots publics ; aucun JAR de `libs/` n'est necessaire.
 - Pour valider l'integration finale, tester en serveur avec les plugins reels charges (Kfaction/Kharvester/OutilsEvolutif).

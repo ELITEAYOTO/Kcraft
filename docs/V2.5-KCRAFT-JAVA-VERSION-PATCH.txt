@@ -1,0 +1,9 @@
+Dans src/main/java/me/krunsh/kcraft/Kcraft.java, remplacer uniquement les labels:
+
+KCraft V2.4 - CraftBatchPlan.
+-> KCraft V2.5 - GUI DirtyQueue + Preview Lock.
+
+Kcraft V2.4
+-> Kcraft V2.5
+
+Le reste de Kcraft.java V2.4 reste inchangé.

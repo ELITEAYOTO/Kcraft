@@ -1,277 +1,287 @@
 package me.krunsh.kcraft.managers;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import me.krunsh.kcraft.Kcraft;
-import me.krunsh.kcraft.utils.MessageUtil;
+import me.krunsh.kcraft.logging.CraftLogRecord;
+import me.krunsh.kcraft.logging.LoggingMetrics;
 
 /**
- * Gestionnaire de logs JSON pour tracer l'activité des crafts
+ * Logging V2.7 : queue unique, worker unique, vraie persistance JSONL.
+ *
+ * Aucun accès Bukkit n'est effectué dans le worker async : toutes les données
+ * du Player sont capturées dans CraftLogRecord sur le thread appelant.
  */
-public class LoggingManager {
-    
+public final class LoggingManager {
+
+    private static final int DEFAULT_MAX_QUEUE = 10000;
+    private static final int DEFAULT_MAX_BATCH = 500;
+    private static final long DEFAULT_FLUSH_TICKS = 40L;
+
     private final Kcraft plugin;
-    private final SimpleDateFormat dateFormat;
-    private final Map<UUID, Map<String, Object>> playerStats;
-    private final Map<String, Object> globalStats;
-    
+    private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+    private final ConcurrentLinkedQueue<CraftLogRecord> queue =
+        new ConcurrentLinkedQueue<CraftLogRecord>();
+    private final Map<UUID, PlayerStats> playerStats =
+        new ConcurrentHashMap<UUID, PlayerStats>();
+    private final Map<String, AtomicLong> craftCounts =
+        new ConcurrentHashMap<String, AtomicLong>();
+    private final AtomicLong totalCrafts = new AtomicLong();
+    private final AtomicLong failedCrafts = new AtomicLong();
+    private final AtomicLong sequence = new AtomicLong();
+    private final LoggingMetrics metrics = new LoggingMetrics();
+
+    private volatile BukkitTask workerTask;
+
     public LoggingManager(Kcraft plugin) {
         this.plugin = plugin;
-        this.dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        this.playerStats = new ConcurrentHashMap<>();
-        this.globalStats = new ConcurrentHashMap<>();
-        
-        initializeStats();
+        ensureWorker();
     }
-    
-    /**
-     * Initialise les statistiques
-     */
-    private void initializeStats() {
-        globalStats.put("total_crafts", 0);
-        globalStats.put("unique_players", 0);
-        globalStats.put("most_crafted", "");
-        globalStats.put("rare_crafts", 0);
-        globalStats.put("failed_crafts", 0);
-        globalStats.put("last_update", dateFormat.format(new Date()));
-    }
-    
-    /**
-     * Log un craft réussi
-     */
+
     public void logCraft(Player player, String craftId, String result, boolean success) {
-        if (!plugin.getConfigManager().isLoggingEnabled()) {
+        if (!plugin.getConfigManager().isLoggingEnabled() || player == null) return;
+
+        updateStats(player, craftId, success);
+
+        if (queue.size() >= DEFAULT_MAX_QUEUE) {
+            metrics.recordDropped();
             return;
         }
-        
+
+        Location location = player.getLocation();
+        String biome = location.getBlock().getBiome().name();
+
+        CraftLogRecord record = new CraftLogRecord(
+            sequence.incrementAndGet(),
+            System.currentTimeMillis(),
+            player.getName(),
+            player.getUniqueId().toString(),
+            craftId,
+            result,
+            success,
+            location.getWorld() == null ? "" : location.getWorld().getName(),
+            location.getBlockX(),
+            location.getBlockY(),
+            location.getBlockZ(),
+            biome
+        );
+
+        queue.offer(record);
+        metrics.recordQueued(queue.size());
+    }
+
+    public void ensureWorker() {
+        if (workerTask != null || !plugin.getConfigManager().isLoggingEnabled()) return;
+
+        workerTask = plugin.getServer().getScheduler().runTaskTimerAsynchronously(
+            plugin,
+            new Runnable() {
+                @Override public void run() { flushQueue(DEFAULT_MAX_BATCH); }
+            },
+            DEFAULT_FLUSH_TICKS,
+            DEFAULT_FLUSH_TICKS
+        );
+    }
+
+    private synchronized boolean flushQueue(int maxBatch) {
+        if (queue.isEmpty()) return true;
+
+        List<CraftLogRecord> batch = new ArrayList<CraftLogRecord>(maxBatch);
+        for (int i = 0; i < maxBatch; i++) {
+            CraftLogRecord record = queue.poll();
+            if (record == null) break;
+            batch.add(record);
+        }
+        if (batch.isEmpty()) return true;
+
+        long started = System.nanoTime();
         try {
-            // Créer l'entrée de log
-            Map<String, Object> logEntry = createLogEntry(player, craftId, result, success);
-            
-            // Mettre à jour les stats
-            updateStats(player, craftId, success);
-            
-            // Écrire en async si activé
-            if (plugin.getConfigManager().isAsyncLoggingEnabled()) {
-                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-                    writeLogEntry(logEntry);
-                });
-            } else {
-                writeLogEntry(logEntry);
+            appendJsonLines(batch);
+            metrics.recordBatch(batch.size(), System.nanoTime() - started);
+            return true;
+        } catch (IOException error) {
+            metrics.recordFailure();
+            // Retry en tête logique : ConcurrentLinkedQueue ne permet pas addFirst,
+            // mais les records sont réinsérés et seront repris au prochain flush.
+            for (CraftLogRecord record : batch) queue.offer(record);
+            plugin.getLogger().warning("Erreur flush logs KCraft: " + error.getMessage());
+            return false;
+        }
+    }
+
+    private void appendJsonLines(List<CraftLogRecord> batch) throws IOException {
+        File file = new File(plugin.getConfigManager().getLogsFolder(), normalizeLogFile());
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) parent.mkdirs();
+
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(file, true), StandardCharsets.UTF_8))) {
+            for (CraftLogRecord record : batch) {
+                writer.write(gson.toJson(record.toMap()));
+                writer.newLine();
             }
-            
-        } catch (Exception e) {
-            MessageUtil.debug("Erreur lors du log du craft: " + e.getMessage(), 1);
         }
     }
-    
-    /**
-     * Crée une entrée de log détaillée
-     */
-    private Map<String, Object> createLogEntry(Player player, String craftId, String result, boolean success) {
-        Map<String, Object> entry = new HashMap<>();
-        
-        // ID unique
-        entry.put("id", "craft_" + String.format("%06d", (Integer) globalStats.get("total_crafts") + 1));
-        
-        // Timestamp
-        entry.put("timestamp", dateFormat.format(new Date()));
-        
-        // Informations joueur
-        Map<String, Object> playerInfo = new HashMap<>();
-        playerInfo.put("name", player.getName());
-        playerInfo.put("uuid", player.getUniqueId().toString());
-        
-        // Faction si disponible
-        String faction = getFactionName(player);
-        if (faction != null) {
-            playerInfo.put("faction", faction);
-            playerInfo.put("faction_power", getFactionPower(player));
-        }
-        
-        entry.put("player", playerInfo);
-        
-        // Informations craft
-        Map<String, Object> craftInfo = new HashMap<>();
-        craftInfo.put("recipe_id", craftId);
-        craftInfo.put("result", result);
-        craftInfo.put("success", success);
-        
-        // TODO: Ajouter rareté si disponible
-        craftInfo.put("rarity", "COMMON");
-        
-        entry.put("craft", craftInfo);
-        
-        // Localisation
-        Map<String, Object> location = new HashMap<>();
-        location.put("world", player.getWorld().getName());
-        location.put("x", player.getLocation().getBlockX());
-        location.put("y", player.getLocation().getBlockY());
-        location.put("z", player.getLocation().getBlockZ());
-        location.put("biome", player.getLocation().getBlock().getBiome().name());
-        
-        entry.put("location", location);
-        
-        return entry;
+
+    private String normalizeLogFile() {
+        String configured = plugin.getConfigManager().getLogFile();
+        if (configured == null || configured.trim().isEmpty()) return "crafts-history.jsonl";
+        String trimmed = configured.trim();
+        if (trimmed.endsWith(".jsonl")) return trimmed;
+        if (trimmed.endsWith(".json")) return trimmed.substring(0, trimmed.length() - 5) + ".jsonl";
+        return trimmed + ".jsonl";
     }
-    
-    /**
-     * Met à jour les statistiques
-     */
+
     private void updateStats(Player player, String craftId, boolean success) {
-        // Stats globales
-        globalStats.put("total_crafts", (Integer) globalStats.get("total_crafts") + 1);
-        globalStats.put("last_update", dateFormat.format(new Date()));
-        
-        if (!success) {
-            globalStats.put("failed_crafts", (Integer) globalStats.get("failed_crafts") + 1);
+        totalCrafts.incrementAndGet();
+        if (!success) failedCrafts.incrementAndGet();
+
+        AtomicLong count = craftCounts.get(craftId);
+        if (count == null) {
+            AtomicLong created = new AtomicLong();
+            AtomicLong existing = craftCounts.putIfAbsent(craftId, created);
+            count = existing == null ? created : existing;
         }
-        
-        // Stats par joueur
-        UUID playerId = player.getUniqueId();
-        Map<String, Object> playerStat = playerStats.computeIfAbsent(playerId, k -> new HashMap<>());
-        
-        playerStat.put("name", player.getName());
-        playerStat.put("total_crafts", (Integer) playerStat.getOrDefault("total_crafts", 0) + 1);
-        playerStat.put("last_craft", dateFormat.format(new Date()));
-        
-        // Faction
-        String faction = getFactionName(player);
-        if (faction != null) {
-            playerStat.put("faction", faction);
+        count.incrementAndGet();
+
+        UUID id = player.getUniqueId();
+        PlayerStats stats = playerStats.get(id);
+        if (stats == null) {
+            PlayerStats created = new PlayerStats(player.getName());
+            PlayerStats existing = playerStats.putIfAbsent(id, created);
+            stats = existing == null ? created : existing;
         }
-        
-        // Craft favori (simple)
-        String currentFavorite = (String) playerStat.get("favorite_craft");
-        if (currentFavorite == null || currentFavorite.equals(craftId)) {
-            playerStat.put("favorite_craft", craftId);
-        }
-        
-        // Taux de réussite
-        int totalCrafts = (Integer) playerStat.get("total_crafts");
-        int successCount = (Integer) playerStat.getOrDefault("success_count", 0);
-        if (success) {
-            successCount++;
-            playerStat.put("success_count", successCount);
-        }
-        
-        double successRate = (double) successCount / totalCrafts * 100;
-        playerStat.put("success_rate", String.format("%.1f%%", successRate));
-        
-        // Mettre à jour le nombre de joueurs uniques
-        globalStats.put("unique_players", playerStats.size());
+        stats.record(player.getName(), craftId, success, System.currentTimeMillis());
     }
-    
-    /**
-     * Écrit une entrée de log dans le fichier JSON
-     */
-    private void writeLogEntry(Map<String, Object> logEntry) {
-        // TODO: Implémenter l'écriture JSON proprement
-        // Pour l'instant, log simple
-        MessageUtil.debug("LOG: " + logEntry.get("player") + " -> " + logEntry.get("craft"), 1);
-    }
-    
-    /**
-     * Sauvegarde toutes les stats
-     */
-    public void saveAll() {
-        if (!plugin.getConfigManager().isLoggingEnabled()) {
-            return;
+
+    public synchronized void saveAll() {
+        BukkitTask task = workerTask;
+        if (task != null) {
+            task.cancel();
+            workerTask = null;
         }
-        
+
+        // Une panne disque ne doit pas bloquer indéfiniment l'arrêt du serveur.
+        while (!queue.isEmpty()) {
+            if (!flushQueue(DEFAULT_MAX_BATCH)) {
+                plugin.getLogger().severe("Arrêt du flush KCraft après erreur disque; "
+                    + queue.size() + " événement(s) non écrits, conservés en mémoire uniquement.");
+                break;
+            }
+        }
+
+        if (!plugin.getConfigManager().isLoggingEnabled()) return;
         try {
-            saveGlobalStats();
+            writeJsonAtomic(new File(plugin.getConfigManager().getLogsFolder(), "stats-global.json"), getGlobalStats());
             if (plugin.getConfigManager().isPerPlayerLogging()) {
-                savePlayerStats();
-            }
-            MessageUtil.debug("Stats sauvegardées", 2);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Erreur lors de la sauvegarde des stats: " + e.getMessage());
-        }
-    }
-    
-    /**
-     * Sauvegarde les stats globales
-     */
-    private void saveGlobalStats() throws IOException {
-        File statsFile = new File(plugin.getConfigManager().getLogsFolder(), "stats-global.json");
-        
-        try (OutputStreamWriter writer = new OutputStreamWriter(
-                new FileOutputStream(statsFile), 
-                StandardCharsets.UTF_8)) {
-            // TODO: Utiliser une vraie lib JSON (Gson par exemple)
-            writer.write("{\n");
-            writer.write("  \"global_stats\": {\n");
-            
-            boolean first = true;
-            for (Map.Entry<String, Object> entry : globalStats.entrySet()) {
-                if (!first) writer.write(",\n");
-                writer.write("    \"" + entry.getKey() + "\": ");
-                
-                if (entry.getValue() instanceof String) {
-                    writer.write("\"" + entry.getValue() + "\"");
-                } else {
-                    writer.write(entry.getValue().toString());
+                Map<String, Object> all = new LinkedHashMap<String, Object>();
+                for (Map.Entry<UUID, PlayerStats> entry : playerStats.entrySet()) {
+                    all.put(entry.getKey().toString(), entry.getValue().snapshot());
                 }
-                
-                first = false;
+                writeJsonAtomic(new File(plugin.getConfigManager().getLogsFolder(), "stats-players.json"), all);
             }
-            
-            writer.write("\n  }\n}");
+        } catch (IOException error) {
+            plugin.getLogger().warning("Erreur sauvegarde stats KCraft: " + error.getMessage());
         }
     }
-    
-    /**
-     * Sauvegarde les stats par joueur
-     */
-    private void savePlayerStats() throws IOException {
-        File playerStatsFile = new File(plugin.getConfigManager().getLogsFolder(), "stats-players.json");
-        
-        // TODO: Implémenter sauvegarde complète des stats joueurs
-        MessageUtil.debug("Sauvegarde stats joueurs: " + playerStats.size() + " joueurs", 2);
+
+    private void writeJsonAtomic(File target, Object value) throws IOException {
+        File parent = target.getParentFile();
+        if (parent != null && !parent.exists()) parent.mkdirs();
+        File tmp = new File(target.getParentFile(), target.getName() + ".tmp");
+        try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(tmp, false), StandardCharsets.UTF_8))) {
+            gson.toJson(value, writer);
+        }
+        try {
+            Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
+            Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
     }
-    
-    /**
-     * Obtient les stats d'un joueur
-     */
+
     public Map<String, Object> getPlayerStats(UUID playerId) {
-        return playerStats.get(playerId);
+        PlayerStats stats = playerStats.get(playerId);
+        return stats == null ? null : stats.snapshot();
     }
-    
-    /**
-     * Obtient les stats globales
-     */
+
     public Map<String, Object> getGlobalStats() {
-        return new HashMap<>(globalStats);
+        Map<String, Object> out = new LinkedHashMap<String, Object>();
+        out.put("total_crafts", Long.valueOf(totalCrafts.get()));
+        out.put("failed_crafts", Long.valueOf(failedCrafts.get()));
+        out.put("unique_players", Integer.valueOf(playerStats.size()));
+
+        String most = "";
+        long mostCount = 0L;
+        Map<String, Long> counts = new LinkedHashMap<String, Long>();
+        for (Map.Entry<String, AtomicLong> entry : craftCounts.entrySet()) {
+            long value = entry.getValue().get();
+            counts.put(entry.getKey(), Long.valueOf(value));
+            if (value > mostCount) {
+                mostCount = value;
+                most = entry.getKey();
+            }
+        }
+        out.put("most_crafted", most);
+        out.put("craft_counts", counts);
+        out.put("pending_logs", Integer.valueOf(queue.size()));
+        return out;
     }
-    
-    // === MÉTHODES UTILITAIRES ===
-    
-    /**
-     * Obtient le nom de faction d'un joueur (via hook)
-     */
-    private String getFactionName(Player player) {
-        // TODO: Implémenter via PluginHookManager quand disponible
-        return null;
-    }
-    
-    /**
-     * Obtient la puissance de faction d'un joueur
-     */
-    private int getFactionPower(Player player) {
-        // TODO: Implémenter via PluginHookManager quand disponible
-        return 0;
+
+    public int getPendingLogCount() { return queue.size(); }
+    public LoggingMetrics getMetrics() { return metrics; }
+
+    private static final class PlayerStats {
+        private String name;
+        private long total;
+        private long success;
+        private long lastCraft;
+        private final Map<String, Long> crafts = new HashMap<String, Long>();
+
+        private PlayerStats(String name) { this.name = name; }
+
+        private synchronized void record(String currentName, String craftId, boolean ok, long timestamp) {
+            name = currentName;
+            total++;
+            if (ok) success++;
+            lastCraft = timestamp;
+            Long count = crafts.get(craftId);
+            crafts.put(craftId, Long.valueOf(count == null ? 1L : count.longValue() + 1L));
+        }
+
+        private synchronized Map<String, Object> snapshot() {
+            Map<String, Object> out = new LinkedHashMap<String, Object>();
+            out.put("name", name);
+            out.put("total_crafts", Long.valueOf(total));
+            out.put("success_count", Long.valueOf(success));
+            out.put("success_rate", Double.valueOf(total == 0L ? 0D : success * 100D / total));
+            out.put("last_craft", Long.valueOf(lastCraft));
+            out.put("crafts", new LinkedHashMap<String, Long>(crafts));
+            return out;
+        }
     }
 }

@@ -1,18 +1,17 @@
 name: Kcraft
-version: 1.0.0
+version: '${project.version}'
 main: me.krunsh.kcraft.Kcraft
 api-version: 1.8
 author: Krunsh
-description: Plugin de craft custom pour serveur PvP faction 1.8.8
+description: KCraft V2.8 - performance diagnostics for Volkaria 1.8.8
 
 softdepend: [Kfaction, Vault, PlaceholderAPI, Multiverse-Inventories, OutilsEvolutif, Kharvester, PluginCIT]
 
 commands:
   kcraft:
     description: Commande principale de Kcraft
-    usage: /<command> [reload|give|list|givetable|info|stats]
+    usage: /<command> [reload|give|list|givetable|info|stats|perf|status]
     permission: kcraft.use
-    
   kcraft-npc:
     description: Commande spéciale pour NPCs/Console
     usage: /<command> [table]
@@ -25,20 +24,22 @@ permissions:
       kcraft.use: true
       kcraft.admin: true
       kcraft.craft.table: true
-      kcraft.table.*: true
-      
+      kcraft.table.use: true
   kcraft.use:
     description: Permission basique pour utiliser Kcraft
     default: true
-    
   kcraft.admin:
-    description: Permission admin (reload, give, etc.)
+    description: Permission admin
     default: op
-
   kcraft.craft.table:
     description: Crafter la Table Antique via table vanilla
     default: true
-    
   kcraft.table.use:
-    description: Utiliser la Table Antique (4x4)
+    description: Utiliser la Table Antique
     default: true
+  kcraft.admin.table:
+    description: Utiliser la table admin virtuelle
+    default: op
+  kcraft.npc:
+    description: Utiliser les commandes NPC KCraft
+    default: op

@@ -39,13 +39,18 @@ public class CraftManager {
         this.plugin = plugin;
         this.recipes = new LinkedHashMap<>();
         this.recipeSources = new RecipeSourceRegistry<CraftRecipe>();
-        loadAllCrafts();
+        loadCandidateCrafts();
     }
     
     /**
      * Charge tous les crafts depuis les fichiers de config
      */
     public void loadAllCrafts() {
+        // L'API historique ne doit pas publier une moitié du runtime.
+        plugin.reload();
+    }
+
+    private void loadCandidateCrafts() {
         recipes.clear();
         recipeSources.clear();
         
@@ -58,8 +63,8 @@ public class CraftManager {
                 totalLoaded += loaded;
                 MessageUtil.log("Chargé " + loaded + " crafts depuis " + craftFile.getName());
             } catch (Exception e) {
-                plugin.getLogger().warning("Erreur lors du chargement de " + craftFile.getName() + ": " + e.getMessage());
-                MessageUtil.debug("Stack trace: " + e.toString(), 1);
+                throw new IllegalStateException("Recettes invalides dans "
+                    + craftFile.getName() + ": " + e.getMessage(), e);
             }
         }
 
@@ -79,7 +84,9 @@ public class CraftManager {
         // Parser chaque section principale du fichier
         for (String sectionKey : config.getKeys(false)) {
             ConfigurationSection mainSection = config.getConfigurationSection(sectionKey);
-            if (mainSection == null) continue;
+            if (mainSection == null) {
+                throw new IllegalArgumentException("Section attendue: " + sectionKey);
+            }
             
             // Parser chaque craft dans la section
             for (String craftId : mainSection.getKeys(false)) {
@@ -95,16 +102,15 @@ public class CraftManager {
                                 loaded++;
                                 MessageUtil.debug("Craft chargé: " + craftId, 2);
                             } else {
-                                recipes.remove(craftId);
-                                plugin.getLogger().severe("Recette KCraft refusée: identifiant dupliqué '"
-                                    + craftId + "' dans " + recipeSources.getDuplicateSources(craftId)
-                                    + ". Aucune définition de cet identifiant ne sera active.");
+                                throw new IllegalArgumentException("Identifiant dupliqué '"
+                                    + craftId + "' dans " + recipeSources.getDuplicateSources(craftId));
                             }
                         }
+                    } else {
+                        throw new IllegalArgumentException("Section de recette attendue");
                     }
                 } catch (Exception e) {
-                    plugin.getLogger().warning("Erreur lors du parsing du craft " + craftId + ": " + e.getMessage());
-                    MessageUtil.debug("Détails: " + e.toString(), 1);
+                    throw new IllegalArgumentException("Recette '" + craftId + "': " + e.getMessage(), e);
                 }
             }
         }
@@ -125,7 +131,7 @@ public class CraftManager {
         
         // Type de craft
         String typeStr = section.getString("type", "SHAPED");
-        recipe.setType(CraftType.fromString(typeStr));
+        recipe.setType(CraftType.valueOf(typeStr.toUpperCase(java.util.Locale.ROOT)));
         
         // Table requise
         recipe.setRequiredTable(section.getString("table", "tier1"));
@@ -186,17 +192,20 @@ public class CraftManager {
         if (ingredientsSection == null) {
             // Pour les recettes SHAPELESS, ingredients peut être une liste
             if (recipe.getType() == CraftType.SHAPELESS && section.isList("ingredients")) {
-                List<Map<?, ?>> ingredientsList = section.getMapList("ingredients");
+                List<?> ingredientsList = section.getList("ingredients");
                 List<CraftIngredient> shapelessIngredients = new ArrayList<>();
                 
-                for (Map<?, ?> ingredientMap : ingredientsList) {
+                for (Object rawIngredient : ingredientsList) {
+                    if (!(rawIngredient instanceof Map)) {
+                        throw new IllegalArgumentException("Chaque ingrédient SHAPELESS doit être une section");
+                    }
+                    Map<?, ?> ingredientMap = (Map<?, ?>) rawIngredient;
                     String materialStr = (String) ingredientMap.get("material");
-                    if (materialStr == null) continue;
+                    if (materialStr == null) throw new IllegalArgumentException("Matériau SHAPELESS absent");
                     
                     Material material = MaterialResolver.resolve(materialStr);
                     if (material == null) {
-                        plugin.getLogger().warning("Matériau invalide dans SHAPELESS: " + materialStr);
-                        continue;
+                        throw new IllegalArgumentException("Matériau SHAPELESS invalide: " + materialStr);
                     }
                     
                     int amount = ingredientMap.containsKey("amount") ? 
@@ -257,7 +266,7 @@ public class CraftManager {
         Map<Character, CraftIngredient> ingredients = new HashMap<>();
         
         for (String key : ingredientsSection.getKeys(false)) {
-            if (key.length() != 1) continue; // Les clés doivent être des caractères uniques
+            if (key.length() != 1) throw new IllegalArgumentException("Symbole ingrédient invalide: " + key);
             
             char symbol = key.charAt(0);
             ConfigurationSection ingredientSection = ingredientsSection.getConfigurationSection(key);
@@ -267,6 +276,8 @@ public class CraftManager {
                 if (ingredient != null) {
                     ingredients.put(symbol, ingredient);
                 }
+            } else {
+                throw new IllegalArgumentException("Section ingrédient attendue pour: " + key);
             }
         }
         
@@ -278,12 +289,11 @@ public class CraftManager {
      */
     private CraftIngredient parseIngredient(ConfigurationSection section) {
         String materialStr = section.getString("material");
-        if (materialStr == null) return null;
+        if (materialStr == null) throw new IllegalArgumentException("Matériau ingrédient absent");
         
         Material material = MaterialResolver.resolve(materialStr);
         if (material == null) {
-            plugin.getLogger().warning("Matériau invalide: " + materialStr);
-            return null;
+            throw new IllegalArgumentException("Matériau ingrédient invalide: " + materialStr);
         }
         
         int amount = section.getInt("amount", 1);
@@ -340,15 +350,16 @@ public class CraftManager {
         // Résultats multiples avec probabilités
         if (section.contains("results")) {
             List<?> resultsList = section.getList("results");
+            if (resultsList == null) throw new IllegalArgumentException("results doit être une liste");
             if (resultsList != null) {
                 for (Object obj : resultsList) {
                     if (obj instanceof Map) {
                         @SuppressWarnings("unchecked")
                         Map<String, Object> resultMap = (Map<String, Object>) obj;
                         CraftResult result = parseResultFromMap(resultMap);
-                        if (result != null) {
-                            results.add(result);
-                        }
+                        results.add(result);
+                    } else {
+                        throw new IllegalArgumentException("Chaque résultat doit être une section");
                     }
                 }
             }
@@ -361,15 +372,14 @@ public class CraftManager {
      * Parse un résultat depuis une section
      */
     private CraftResult parseResult(ConfigurationSection section) {
-        if (section == null) return null;
+        if (section == null) throw new IllegalArgumentException("Section de résultat attendue");
         
         String materialStr = section.getString("material");
-        if (materialStr == null) return null;
+        if (materialStr == null) throw new IllegalArgumentException("Matériau résultat absent");
         
         Material material = MaterialResolver.resolve(materialStr);
         if (material == null) {
-            plugin.getLogger().warning("Matériau résultat invalide: " + materialStr);
-            return null;
+            throw new IllegalArgumentException("Matériau résultat invalide: " + materialStr);
         }
         
         int amount = section.getInt("amount", 1);
@@ -427,14 +437,13 @@ public class CraftManager {
      */
     private CraftResult parseResultFromMap(Map<String, Object> map) {
         if (map == null || !map.containsKey("material")) {
-            return null;
+            throw new IllegalArgumentException("Matériau résultat absent");
         }
 
         String materialStr = String.valueOf(map.get("material"));
         Material material = MaterialResolver.resolve(materialStr);
         if (material == null) {
-            plugin.getLogger().warning("Matériau résultat invalide: " + materialStr);
-            return null;
+            throw new IllegalArgumentException("Matériau résultat invalide: " + materialStr);
         }
 
         int amount = 1;
@@ -571,8 +580,7 @@ public class CraftManager {
      * Recharge tous les crafts
      */
     public void reloadCrafts() {
-        MessageUtil.log("Rechargement des crafts...");
-        loadAllCrafts();
+        plugin.reload();
     }
     
     /**
